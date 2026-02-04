@@ -129,8 +129,7 @@ SESSION_SECRET=<your-secure-32-byte-secret>
 FASTIFY_PORT=3000
 DATABASE_URL=file:/app/data/beammeup.sqlite
 REDIS_URL=  # Optional, leave empty for in-memory rate limiting
-BEAMMP_IMAGE=beammp/beammp-server:latest  # Required only if running BeamMP container
-BEAMMP_TOKEN=  # BeamMP auth token (required if running BeamMP container)
+BEAMMP_TOKEN=  # BeamMP auth token (required)
 ```
 
 #### Docker Ports
@@ -138,19 +137,15 @@ BEAMMP_TOKEN=  # BeamMP auth token (required if running BeamMP container)
 The stack exposes unique ports to avoid conflicts:
 - Backend API: **localhost:8200**
 - Frontend UI: **localhost:8201**
-- BeamMP Server: **30814** (game server port, only if BeamMP profile is enabled)
+- BeamMP Server: **30814** (game server port)
 
 You'll use Caddy to reverse proxy backend/frontend on a single port (80/443).
 
 ### 3. Start the Stack
 
 ```bash
-# Build and start BeamMeUp (UI + API)
+# Build and start BeamMeUp (UI + API + BeamMP)
 docker compose up -d --build
-
-# Optional: start BeamMP server container
-# (requires BEAMMP_IMAGE and BEAMMP_TOKEN in .env)
-docker compose --profile beammp up -d
 
 # Wait for startup (20-30 seconds)
 sleep 5
@@ -201,10 +196,6 @@ You'll be redirected to the setup page:
    docker compose up -d --build
     # Access UI at http://localhost:8201
     # Access API at http://localhost:8200
-
-    # Optional: start BeamMP container
-    # (requires BEAMMP_IMAGE and BEAMMP_TOKEN in .env)
-    docker compose --profile beammp up -d
    ```
 
 ### Npipe Backend (Legacy)

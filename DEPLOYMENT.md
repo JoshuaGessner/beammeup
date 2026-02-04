@@ -20,8 +20,7 @@
   NODE_ENV=production
   SESSION_SECRET=<your-32-byte-random-secret>
   FASTIFY_PORT=3000
-  BEAMMP_IMAGE=beammp/beammp-server:latest  # Required only if running BeamMP container
-  BEAMMP_TOKEN=  # Required only if running BeamMP container
+  BEAMMP_TOKEN=  # Required
   ```
 
 - [ ] **HTTPS Configuration**
@@ -108,9 +107,6 @@ nano .env
 # Build and start all services
 docker compose up -d --build
 
-# Optional: start BeamMP container (requires BEAMMP_IMAGE + BEAMMP_TOKEN)
-docker compose --profile beammp up -d
-
 # Wait for initialization
 sleep 10
 
@@ -166,7 +162,6 @@ cat > .env << EOF
 NODE_ENV=production
 SESSION_SECRET=$SESSION_SECRET
 FASTIFY_PORT=3000
-BEAMMP_IMAGE=beammp/beammp-server:latest
 BEAMMP_TOKEN=
 EOF
 

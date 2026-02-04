@@ -38,9 +38,7 @@ services:
 
   # BeamMP server
   beammp:
-    profiles:
-      - beammp
-    image: ${BEAMMP_IMAGE:-beammp/beammp-server:latest}
+    image: mbentley/beammp-server:latest
     container_name: beammp
     ports:
       - "30814:30814"
