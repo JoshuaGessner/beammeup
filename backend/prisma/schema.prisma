@@ -78,3 +78,4 @@ model AuditLog {
   @@index([createdAt])
   @@index([resource])
   @@map("audit_logs")
+}
