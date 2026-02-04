@@ -12,7 +12,7 @@ model User {
   username      String    @unique
   email         String?
   passwordHash  String
-  role          Role      @default(VIEWER)
+  role          String    @default("VIEWER")  // OWNER, ADMIN, OPERATOR, VIEWER
   isActive      Boolean   @default(true)
   lastLogin     DateTime?
   createdAt     DateTime  @default(now())
@@ -22,13 +22,6 @@ model User {
   modsUploaded  ModFile[]
 
   @@map("users")
-}
-
-enum Role {
-  OWNER
-  ADMIN
-  OPERATOR
-  VIEWER
 }
 
 model Session {
@@ -79,24 +72,16 @@ model AuditLog {
   ipAddress String?
   userAgent String?
   createdAt DateTime  @default(now())
+String    // CONFIG_VIEW, CONFIG_UPDATE, SERVER_RESTART, MOD_UPLOAD, MOD_DELETE, USER_CREATE, USER_UPDATE, USER_DELETE, USER_LOGIN, USER_LOGOUT, AUTHKEY_REPLACE
+  resource  String    // "config", "server", "mod", "user"
+  resourceId String?
+  details   String?   // JSON stringified details or diff
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime  @default(now())
 
   @@index([userId])
   @@index([action])
   @@index([createdAt])
   @@index([resource])
   @@map("audit_logs")
-}
-
-enum AuditAction {
-  CONFIG_VIEW
-  CONFIG_UPDATE
-  SERVER_RESTART
-  MOD_UPLOAD
-  MOD_DELETE
-  USER_CREATE
-  USER_UPDATE
-  USER_DELETE
-  USER_LOGIN
-  USER_LOGOUT
-  AUTHKEY_REPLACE
-}
