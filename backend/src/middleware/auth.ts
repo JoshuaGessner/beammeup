@@ -12,9 +12,9 @@ export async function requireAuth(
   }
 }
 
-export async function requireRole(
+export function requireRole(
   ...allowedRoles: string[]
-): Promise<(request: FastifyRequest, reply: FastifyReply) => Promise<void>> {
+): (request: FastifyRequest, reply: FastifyReply) => Promise<void> {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     await requireAuth(request, reply);
 

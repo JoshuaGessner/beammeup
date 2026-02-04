@@ -19,7 +19,7 @@ export async function diagnosticsRoutes(fastify: FastifyInstance) {
   fastify.get<{ Querystring: { format?: string } }>(
     '/export',
     {
-      preHandler: requireRole('OWNER') as any,
+      preHandler: requireRole('OWNER'),
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const userId = (request.user as any)?.sub;
@@ -65,7 +65,7 @@ export async function diagnosticsRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/health',
     {
-      preHandler: requireRole('OPERATOR') as any,
+      preHandler: requireRole('OPERATOR'),
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {

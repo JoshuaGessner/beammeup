@@ -46,6 +46,12 @@ services:
       - ./beammp-config:/beammp
     networks:
       - beammeup
+    # Wait for config file to be set up before starting
+    healthcheck:
+      test: ["CMD", "test", "-f", "/beammp/ServerConfig.toml"]
+      interval: 5s
+      timeout: 1s
+      retries: 120  # Wait up to 10 minutes for config file
 
 networks:
   beammeup:
