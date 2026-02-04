@@ -37,7 +37,7 @@ export async function readConfigFile(): Promise<BeamMPConfig> {
   try {
     const content = await readFile(CONFIG_PATH, 'utf-8');
     const config = TOML.parse(content);
-    return config as BeamMPConfig;
+    return config as any as BeamMPConfig;
   } catch (error) {
     console.error('Failed to read config file:', error);
     throw new Error('Failed to read server config');

@@ -115,7 +115,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     try {
       await request.jwtVerify();
       const user = await prisma.user.findUnique({
-        where: { id: request.user?.sub },
+        where: { id: (request.user as any)?.sub },
         select: { id: true, username: true, role: true, email: true },
       });
 

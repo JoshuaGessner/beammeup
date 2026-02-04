@@ -9,7 +9,7 @@ export async function auditRoutes(fastify: FastifyInstance) {
       await requireAuth(request, reply);
 
       const user = await prisma.user.findUnique({
-        where: { id: request.user?.sub },
+        where: { id: (request.user as any)?.sub },
       });
 
       if (!user || !['OWNER', 'ADMIN'].includes(user.role)) {

@@ -52,7 +52,7 @@ export async function diagnosticsRoutes(fastify: FastifyInstance) {
           return diagnostics;
         }
       } catch (error) {
-        request.log.error('Failed to export diagnostics:', error);
+        (request.log as any).error('Failed to export diagnostics:', error);
         return reply.code(500).send({ error: 'Failed to export diagnostics' });
       }
     }
@@ -81,7 +81,7 @@ export async function diagnosticsRoutes(fastify: FastifyInstance) {
 
         return health;
       } catch (error) {
-        request.log.error('Health check failed:', error);
+        (request.log as any).error('Health check failed:', error);
         return reply.code(503).send({ error: 'Service unavailable' });
       }
     }
