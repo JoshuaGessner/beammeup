@@ -3,8 +3,9 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-# Install OpenSSL 1.1 compatibility (required by Prisma v5 native engine for libssl.so.1.1)
-RUN apk add --no-cache openssl1.1-compat
+# Install OpenSSL 1.1 (required by Prisma v5 native engine)
+# libssl1.1 provides libssl.so.1.1 for Prisma binary engine compatibility
+RUN apk add --no-cache libssl1.1 libcrypto1.1
 
 # Copy package files
 COPY package*.json ./
@@ -26,8 +27,9 @@ FROM node:24-alpine
 
 WORKDIR /app
 
-# Install OpenSSL 1.1 compatibility (required by Prisma v5 native engine for libssl.so.1.1)
-RUN apk add --no-cache openssl1.1-compat
+# Install OpenSSL 1.1 (required by Prisma v5 native engine)
+# libssl1.1 provides libssl.so.1.1 for Prisma binary engine compatibility
+RUN apk add --no-cache libssl1.1 libcrypto1.1
 
 # Copy package files
 COPY package*.json ./
