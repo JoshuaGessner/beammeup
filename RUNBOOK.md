@@ -6,7 +6,9 @@ Quick reference guide for common operational tasks.
 
 ```bash
 # ✓ Check health
-curl http://localhost:8088/api/diagnostics/health
+curl http://localhost:3000/health  # Backend directly
+# Or via Caddy:
+curl https://admin.beammp.example.com/api/diagnostics/health
 
 # ✓ Verify containers running
 docker compose ps
@@ -55,8 +57,8 @@ docker compose restart backend
 # Restart BeamMP server only
 docker compose restart beammp
 
-# Restart nginx proxy only
-docker compose restart proxy
+# Restart frontend only
+docker compose restart frontend
 ```
 
 ## Backup & Restore
@@ -269,7 +271,9 @@ Via Web UI:
 
 ```bash
 # Get full health status
-curl http://localhost:8088/api/diagnostics/health | jq
+curl http://localhost:3000/api/diagnostics/health | jq
+# Or via Caddy:
+curl https://admin.beammp.example.com/api/diagnostics/health | jq
 
 # Expected response
 {
@@ -330,17 +334,22 @@ docker compose up -d
 ### Can't Access Web UI
 
 ```bash
-# Check if proxy is running
-docker compose ps proxy
+# Check if services are running
+docker compose ps
 
-# Check logs
-docker compose logs proxy
+# Check backend logs
+docker compose logs backend
 
-# Verify port mapping
-docker compose port proxy 80
+# Check frontend logs
+docker compose logs frontend
 
-# Restart proxy
-docker compose restart proxy
+# Verify ports
+docker compose port backend 3000
+docker compose port frontend 3000
+
+# Check Caddy is running and configured correctly
+sudo systemctl status caddy
+sudo caddy validate --config /etc/caddy/Caddyfile
 ```
 
 ### Database Locked

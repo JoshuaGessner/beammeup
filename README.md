@@ -87,7 +87,7 @@ A production-ready, fully Dockerized web admin panel for managing a BeamMP game 
 
 **Infrastructure:**
 - Docker & Docker Compose v2.20+
-- Nginx (reverse proxy, security headers)
+- Caddy (reverse proxy for production HTTPS)
 - SQLite 3 (persistent database)
 
 ## Quick Start
@@ -131,16 +131,13 @@ DATABASE_URL=file:/app/data/beammeup.sqlite
 REDIS_URL=  # Optional, leave empty for in-memory rate limiting
 ```
 
-#### Docker Compose Port
+#### Docker Ports
 
-The stack runs on **localhost:8088** by default. To change:
+The stack exposes:
+- Backend API: **localhost:3000**
+- Frontend UI: **localhost:3001**
 
-**File: `docker-compose.yml`**
-```yaml
-  proxy:
-    ports:
-      - "127.0.0.1:8088:80"  # Change 8088 to your desired port
-```
+You'll use Caddy to reverse proxy both services on a single port (80/443).
 
 ### 3. Start the Stack
 
@@ -157,7 +154,9 @@ docker compose logs -f
 
 ### 4. First-Run Setup
 
-Navigate to **http://localhost:8088**
+Navigate to your Caddy-configured domain (e.g., **https://admin.beammp.example.com**)
+
+Or directly to frontend during development: **http://localhost:3001**
 
 You'll be redirected to the setup page:
 
@@ -206,22 +205,23 @@ set DOCKER_HOST=npipe:////./pipe/docker_engine
 docker compose up -d --build
 ```
 
-## Self-Hosted / Caddy Configuration
+## Production Deployment with Caddy
 
-For production deployment on your own server with Caddy reverse proxy:
+Caddy handles SSL, reverse proxy, and security headers for your production deployment.
 
-### 1. Install BeamMeUp on Host
+### 1. Start BeamMeUp Stack
 
 ```bash
-# On your Linux server
+# On your server
 cd /opt/beammeup
 docker compose up -d --build
 
-# Verify it's running on port 3000 (backend) and 3001 (frontend)
+# Verify both services running:
+# Backend on port 3000, Frontend on port 3001
 docker compose ps
 ```
 
-### 2. Caddy Config
+### 2. Caddy Configuration
 
 **File: `/etc/caddy/Caddyfile`**
 
@@ -235,23 +235,29 @@ admin.beammp.example.com {
         Referrer-Policy "no-referrer"
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';"
     }
 
-    # Reverse proxy to BeamMeUp
-    reverse_proxy localhost:8088 {
-        # WebSocket support (not needed currently, but safe to include)
-        header_up Connection Upgrade
-        header_up Upgrade websocket
-        
-        # Preserve client IP
-        header_up X-Real-IP {http.request.remote.host}
-        header_up X-Forwarded-For {http.request.header.X-Forwarded-For}
-        header_up X-Forwarded-Proto {http.request.proto}
-        
-        # Timeouts
-        transport http {
-            dial_timeout 30s
-            response_header_timeout 30s
+    # API routes to backend
+    handle /api/* {
+        reverse_proxy localhost:3000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            
+            transport http {
+                dial_timeout 30s
+                response_header_timeout 30s
+            }
+        }
+    }
+
+    # All other routes to frontend (SPA)
+    handle {
+        reverse_proxy localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
         }
     }
 }
@@ -327,13 +333,17 @@ docker compose up -d --build
 ### Port Already in Use
 
 ```bash
-# Check what's using port 8088
-lsof -i :8088  # macOS/Linux
-netstat -anbo | findstr :8088  # Windows
+# Check what's using ports
+lsof -i :3000  # Backend
+lsof -i :3001  # Frontend
 
-# Change port in docker-compose.yml:
-# ports:
-#   - "127.0.0.1:9999:80"  # Use 9999 instead
+# Change ports in docker-compose.yml if needed:
+# backend:
+#   ports:
+#     - "3100:3000"  # Use 3100 instead
+# frontend:
+#   ports:
+#     - "3101:3000"  # Use 3101 instead
 ```
 
 ### Can't Connect After Restart
@@ -357,7 +367,7 @@ docker compose up -d --build
 
 ```bash
 # Clear browser cookies
-# Settings > Privacy > Cookies > Clear All for localhost:8088
+# Settings > Privacy > Cookies > Clear All for your domain
 
 # Or clear localStorage
 # Open DevTools (F12) > Console > type:
@@ -531,7 +541,6 @@ beammeup/
 │   └── package.json
 │
 ├── docker-compose.yml     # Container orchestration
-├── nginx.conf             # Reverse proxy config
 └── README.md              # This file
 ```
 
@@ -560,7 +569,7 @@ npx prisma migrate dev
 - [ ] Set `NODE_ENV=production`
 - [ ] Set `SESSION_SECRET` to strong 32-byte random value
 - [ ] Update database backups location if using NFS
-- [ ] Configure reverse proxy (Caddy/Nginx) with HTTPS
+- [ ] Configure Caddy reverse proxy with HTTPS
 - [ ] Test email notifications (if configured)
 - [ ] Set resource limits in docker-compose.yml
 - [ ] Enable log rotation for Docker volumes

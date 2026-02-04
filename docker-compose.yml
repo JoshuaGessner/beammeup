@@ -27,28 +27,16 @@ services:
     networks:
       - beammeup
 
-  # Frontend (served by Nginx)
+  # Frontend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: beammeup-frontend
+    ports:
+      - "3001:3000"
     environment:
       NODE_ENV: production
-    networks:
-      - beammeup
-
-  # Edge proxy (routes UI and API to single port)
-  proxy:
-    image: nginx:alpine
-    container_name: beammeup-proxy
-    ports:
-      - "127.0.0.1:8088:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - backend
-      - frontend
     networks:
       - beammeup
 

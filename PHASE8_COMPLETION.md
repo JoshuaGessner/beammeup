@@ -10,7 +10,7 @@ Phase 8 focused on production hardening, security improvements, comprehensive do
 
 ## Deliverables
 
-### 1. ✅ Security Headers (Backend + Edge)
+### 1. ✅ Security Headers (Backend)
 
 **Backend (Fastify Helmet)**
 - `src/index.ts`: Enhanced helmet configuration
@@ -21,8 +21,8 @@ Phase 8 focused on production hardening, security improvements, comprehensive do
 - XSS protection enabled
 - Referrer policy: no-referrer
 
-**Edge (Nginx)**
-- `nginx.conf`: Added comprehensive security headers
+**Production (Caddy)**
+- Security headers configured in Caddyfile (see DEPLOYMENT.md)
 - X-Frame-Options: DENY
 - X-Content-Type-Options: nosniff
 - Strict-Transport-Security with preload
@@ -33,7 +33,7 @@ Phase 8 focused on production hardening, security improvements, comprehensive do
 **Changes**:
 - Removed `unsafe-inline` from script/style CSP directives
 - Added all modern security headers via Helmet
-- Nginx proxy timeouts configured
+- Caddy handles TLS and additional security headers in production
 
 ---
 
@@ -201,7 +201,9 @@ docker compose up -d --build
 4. `routes/auth.ts` - Added input validation to login endpoint
 
 **Configuration**:
-1. `nginx.conf` - Added security headers, timeouts, updated CSP
+1. Removed nginx container - Use your own Caddy install for reverse proxy
+2. Backend exposed on port 3000, frontend on port 3001
+3. Caddy configuration examples in DEPLOYMENT.md
 
 ### Frontend (`frontend/src/`)
 
@@ -360,9 +362,9 @@ curl http://localhost:8088/api/diagnostics/health
 - 📝 `src/lib/api.ts`
 
 ### Configuration & Documentation
-- 📝 `nginx.conf`
-- 📝 `README.md` (major rewrite - 850+ lines)
-- 📝 `DEPLOYMENT.md` (complete rewrite - 700+ lines)
+- 📝 `docker-compose.yml` (removed nginx, exposed backend:3000 and frontend:3001)
+- 📝 `README.md` (major rewrite - 850+ lines, Caddy-focused)
+- 📝 `DEPLOYMENT.md` (complete rewrite - 700+ lines, Caddy reverse proxy)
 - ✨ `RUNBOOK.md` (NEW - 400+ lines)
 
 ---
@@ -432,7 +434,7 @@ DOCUMENTATION_INDEX.md  - File guide
 
 ## Performance Notes
 
-- Request timeout: 30 seconds (Fastify + Nginx)
+- Request timeout: 30 seconds (Fastify + Caddy)
 - Max request body: 100MB (multipart mods)
 - Database: SQLite with WAL mode recommended
 - Memory: 1-2GB recommended for backend

@@ -181,19 +181,30 @@ admin.beammp.example.com {
         X-XSS-Protection "1; mode=block"
         Referrer-Policy "no-referrer"
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';"
     }
 
-    # Reverse proxy to BeamMeUp
-    reverse_proxy localhost:8088 {
-        header_up X-Real-IP {http.request.remote.host}
-        header_up X-Forwarded-For {http.request.header.X-Forwarded-For}
-        header_up X-Forwarded-Proto {http.request.proto}
-        
-        # Timeouts
-        transport http {
-            dial_timeout 30s
-            response_header_timeout 30s
-            read_timeout 30s
+    # API routes to backend
+    handle /api/* {
+        reverse_proxy localhost:3000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            
+            transport http {
+                dial_timeout 30s
+                response_header_timeout 30s
+            }
+        }
+    }
+
+    # All other routes to frontend (SPA)
+    handle {
+        reverse_proxy localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
         }
     }
 }
@@ -216,7 +227,8 @@ docker compose up -d --build
 
 # Verify health
 sleep 10
-curl https://admin.beammp.example.com/api/diagnostics/health
+curl http://localhost:3000/health  # Backend
+curl http://localhost:3001  # Frontend
 
 # Monitor logs
 docker compose logs -f
