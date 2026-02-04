@@ -202,3 +202,6 @@ class ApiClient {
     const response = await this.client.get('/diagnostics/health');
     return response.data;
   }
+}
+
+export const apiClient = new ApiClient();

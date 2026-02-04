@@ -187,12 +187,3 @@ export function ModsPage() {
     </Layout>
   );
 }
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </Layout>
-  );
-}
