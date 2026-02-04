@@ -65,14 +65,7 @@ model AuditLog {
   id        String    @id @default(cuid())
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  action    AuditAction
-  resource  String    // "config", "server", "mod", "user"
-  resourceId String?
-  details   String?   // JSON stringified details or diff
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime  @default(now())
-String    // CONFIG_VIEW, CONFIG_UPDATE, SERVER_RESTART, MOD_UPLOAD, MOD_DELETE, USER_CREATE, USER_UPDATE, USER_DELETE, USER_LOGIN, USER_LOGOUT, AUTHKEY_REPLACE
+  action    String    // CONFIG_VIEW, CONFIG_UPDATE, SERVER_RESTART, MOD_UPLOAD, MOD_DELETE, USER_CREATE, USER_UPDATE, USER_DELETE, USER_LOGIN, USER_LOGOUT, AUTHKEY_REPLACE
   resource  String    // "config", "server", "mod", "user"
   resourceId String?
   details   String?   // JSON stringified details or diff
