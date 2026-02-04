@@ -8,7 +8,7 @@ services:
       dockerfile: Dockerfile
     container_name: beammeup-backend
     ports:
-      - "3000:3000"
+      - "8200:3000"
     environment:
       NODE_ENV: production
       FASTIFY_PORT: 3000
@@ -34,7 +34,7 @@ services:
       dockerfile: Dockerfile
     container_name: beammeup-frontend
     ports:
-      - "3001:3000"
+      - "8201:3000"
     environment:
       NODE_ENV: production
     networks:
@@ -45,7 +45,7 @@ services:
     image: beammp:latest
     container_name: beammp
     ports:
-      - "3001:3001"
+      - "30814:30814"
     volumes:
       - /beammp:/beammp
     environment:

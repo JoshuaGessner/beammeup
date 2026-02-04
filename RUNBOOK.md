@@ -6,7 +6,7 @@ Quick reference guide for common operational tasks.
 
 ```bash
 # ✓ Check health
-curl http://localhost:3000/health  # Backend directly
+curl http://localhost:8200/health  # Backend directly
 # Or via Caddy:
 curl https://admin.beammp.example.com/api/diagnostics/health
 
@@ -271,7 +271,7 @@ Via Web UI:
 
 ```bash
 # Get full health status
-curl http://localhost:3000/api/diagnostics/health | jq
+curl http://localhost:8200/api/diagnostics/health | jq
 # Or via Caddy:
 curl https://admin.beammp.example.com/api/diagnostics/health | jq
 
@@ -344,8 +344,8 @@ docker compose logs backend
 docker compose logs frontend
 
 # Verify ports
-docker compose port backend 3000
-docker compose port frontend 3000
+docker compose port backend 3000  # Should show 8200
+docker compose port frontend 3000  # Should show 8201
 
 # Check Caddy is running and configured correctly
 sudo systemctl status caddy

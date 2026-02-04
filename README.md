@@ -133,11 +133,12 @@ REDIS_URL=  # Optional, leave empty for in-memory rate limiting
 
 #### Docker Ports
 
-The stack exposes:
-- Backend API: **localhost:3000**
-- Frontend UI: **localhost:3001**
+The stack exposes unique ports to avoid conflicts:
+- Backend API: **localhost:8200**
+- Frontend UI: **localhost:8201**
+- BeamMP Server: **30814** (game server port)
 
-You'll use Caddy to reverse proxy both services on a single port (80/443).
+You'll use Caddy to reverse proxy backend/frontend on a single port (80/443).
 
 ### 3. Start the Stack
 
@@ -156,7 +157,9 @@ docker compose logs -f
 
 Navigate to your Caddy-configured domain (e.g., **https://admin.beammp.example.com**)
 
-Or directly to frontend during development: **http://localhost:3001**
+Or directly to services during development:
+- Backend API: **http://localhost:8200**
+- Frontend UI: **http://localhost:8201**
 
 You'll be redirected to the setup page:
 
@@ -240,7 +243,7 @@ admin.beammp.example.com {
 
     # API routes to backend
     handle /api/* {
-        reverse_proxy localhost:3000 {
+        reverse_proxy localhost:8200 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
@@ -254,7 +257,7 @@ admin.beammp.example.com {
 
     # All other routes to frontend (SPA)
     handle {
-        reverse_proxy localhost:3001 {
+        reverse_proxy localhost:8201 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
@@ -334,16 +337,17 @@ docker compose up -d --build
 
 ```bash
 # Check what's using ports
-lsof -i :3000  # Backend
-lsof -i :3001  # Frontend
+lsof -i :8200  # Backend
+lsof -i :8201  # Frontend
+lsof -i :30814  # BeamMP server
 
 # Change ports in docker-compose.yml if needed:
 # backend:
 #   ports:
-#     - "3100:3000"  # Use 3100 instead
+#     - "8300:3000"  # Use 8300 instead
 # frontend:
 #   ports:
-#     - "3101:3000"  # Use 3101 instead
+#     - "8301:3000"  # Use 8301 instead
 ```
 
 ### Can't Connect After Restart

@@ -187,7 +187,7 @@ admin.beammp.example.com {
 
     # API routes to backend
     handle /api/* {
-        reverse_proxy localhost:3000 {
+        reverse_proxy localhost:8200 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
@@ -201,7 +201,7 @@ admin.beammp.example.com {
 
     # All other routes to frontend (SPA)
     handle {
-        reverse_proxy localhost:3001 {
+        reverse_proxy localhost:8201 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
@@ -227,8 +227,8 @@ docker compose up -d --build
 
 # Verify health
 sleep 10
-curl http://localhost:3000/health  # Backend
-curl http://localhost:3001  # Frontend
+curl http://localhost:8200/health  # Backend
+curl http://localhost:8201  # Frontend
 
 # Monitor logs
 docker compose logs -f
