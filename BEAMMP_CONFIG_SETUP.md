@@ -33,17 +33,32 @@ To get an auth key:
 
 ### 3. Optional: Configure Server Settings
 
-You can optionally customize:
+You can customize many server settings in the `[General]` section:
 
 ```toml
 [General]
-MaxPlayers = 32              # Max concurrent players
-Debug = false               # Enable debug logging if needed
+Port = 30814                # Server port
+AllowGuests = false         # Allow guests without account
+LogChat = true              # Log chat messages
+Debug = false               # Enable debug logging
+IP = "::"                   # Bind IP (:: for IPv6, 0.0.0.0 for IPv4)
+Private = false             # Hide from public server list
+InformationPacket = true    # Allow info queries without joining
+Name = "Your Server Name"   # Server name in browser
+Tags = "Tag1,Tag2,Tag3"     # Server tags (comma-separated)
+MaxCars = 4                 # Max vehicles on server
+MaxPlayers = 8              # Max concurrent players
+Map = "/levels/hirochi_raceway/info.json"  # Map to load
+Description = "Your description"
+ResourceFolder = "Resources"  # Mod folder
+```
 
+And in the `[Misc]` section:
+
+```toml
 [Misc]
-LogLevel = "Info"           # Debug, Info, Warning, Error
-Description = "Your server description"
-Tags = "your, server, tags"
+ImScaredOfUpdates = false   # Hide update reminders
+UpdateReminderTime = "7d"   # Update check frequency (s/min/h/d)
 ```
 
 ### 4. Start the Containers
