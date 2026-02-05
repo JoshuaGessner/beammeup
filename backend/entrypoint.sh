@@ -17,4 +17,10 @@ echo "=== Database schema applied successfully ==="
 
 echo ""
 echo "=== Starting application ==="
-exec node dist/index.js
+
+# Add error handling for the Node process
+node dist/index.js 2>&1 || {
+  EXIT_CODE=$?
+  echo "ERROR: Node process exited with code $EXIT_CODE"
+  exit $EXIT_CODE
+}

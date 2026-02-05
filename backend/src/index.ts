@@ -12,13 +12,17 @@ import { errorHandler } from './middleware/error-handler.js';
 import { auditLogger } from './middleware/audit-logger.js';
 import { attachSession } from './middleware/session.js';
 
+console.log('[index.ts] Module loading...');
+
 const ENV = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   FASTIFY_PORT: parseInt(process.env.FASTIFY_PORT || '3000', 10),
   SESSION_SECRET: process.env.SESSION_SECRET || 'dev-secret-change-in-production',
 };
 
+console.log('[index.ts] Initializing Prisma...');
 export const prisma = new PrismaClient();
+console.log('[index.ts] Prisma initialized');
 
 export async function createApp() {
   const fastify = Fastify({
@@ -99,16 +103,23 @@ export async function createApp() {
 
 export async function start() {
   try {
+    console.log('[start] Creating app...');
     const fastify = await createApp();
 
+    console.log('[start] Listening on port', ENV.FASTIFY_PORT);
     await fastify.listen({ port: ENV.FASTIFY_PORT, host: '0.0.0.0' });
+    console.log('[start] Server listening on port', ENV.FASTIFY_PORT);
     fastify.log.info(`Server listening on port ${ENV.FASTIFY_PORT}`);
   } catch (err) {
-    console.error('FATAL ERROR:', err);
+    console.error('[start] FATAL ERROR:', err);
     process.exit(1);
   }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  start();
+  console.log('[index.ts] Starting server...');
+  start().catch(err => {
+    console.error('[index.ts] Unhandled error:', err);
+    process.exit(1);
+  });
 }
