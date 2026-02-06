@@ -25,12 +25,18 @@ export async function restartBeamMP(): Promise<void> {
 export async function getContainerStatus(
   containerName: string
 ): Promise<{ running: boolean; state?: string; startedAt?: string }> {
+  const dockerHost = process.env.DOCKER_HOST || 'unix:///var/run/docker.sock';
+  
   try {
+    const options = dockerHost.includes('npipe') 
+      ? { env: { ...process.env, DOCKER_HOST: dockerHost } }
+      : undefined;
+      
     const output = await executeCommand('docker', [
       'inspect',
       containerName,
       '--format={{.State.Running}},{{.State.Status}},{{.State.StartedAt}}',
-    ]);
+    ], options);
 
     const [running, state, startedAt] = output.trim().split(',');
 
@@ -39,7 +45,8 @@ export async function getContainerStatus(
       state: state || 'unknown',
       startedAt,
     };
-  } catch {
+  } catch (error) {
+    console.error(`Failed to get container status for ${containerName}:`, error);
     return { running: false, state: 'stopped' };
   }
 }
@@ -63,15 +70,22 @@ export async function getContainerLogs(
   containerName: string,
   lines: number = 200
 ): Promise<string> {
+  const dockerHost = process.env.DOCKER_HOST || 'unix:///var/run/docker.sock';
+  
   try {
+    const options = dockerHost.includes('npipe') 
+      ? { env: { ...process.env, DOCKER_HOST: dockerHost } }
+      : undefined;
+      
     const output = await executeCommand('docker', [
       'logs',
       `--tail=${lines}`,
       containerName,
-    ]);
+    ], options);
     return output;
   } catch (error) {
-    throw new Error('Failed to retrieve logs');
+    console.error(`Failed to retrieve logs for container ${containerName}:`, error);
+    throw new Error(`Failed to retrieve logs: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

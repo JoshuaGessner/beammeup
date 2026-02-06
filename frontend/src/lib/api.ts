@@ -1,5 +1,16 @@
 import axios, { AxiosInstance } from 'axios';
 
+//Helper to read cookie by name
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    const cookieValue = parts.pop()?.split(';').shift();
+    return cookieValue || null;
+  }
+  return null;
+}
+
 // Determine API base URL
 const getApiBaseUrl = () => {
   const isDev = import.meta.env.DEV;
@@ -21,7 +32,6 @@ const getApiBaseUrl = () => {
 class ApiClient {
   private client: AxiosInstance;
   private token: string | null = null;
-  private csrfToken: string | null = null;
 
   constructor() {
     const baseURL = getApiBaseUrl();
@@ -43,8 +53,10 @@ class ApiClient {
       if (this.token) {
         config.headers.Authorization = `Bearer ${this.token}`;
       }
-      if (this.csrfToken) {
-        config.headers['X-CSRF-Token'] = this.csrfToken;
+      // Always read CSRF token from cookie before each request
+      const csrfToken = getCookie('csrf_token');
+      if (csrfToken) {
+        config.headers['X-CSRF-Token'] = csrfToken;
       }
       return config;
     });
@@ -76,11 +88,11 @@ class ApiClient {
     return this.token;
   }
 
-  // Fetch and store CSRF token
+  // Fetch CSRF token (sets cookie that will be read by request interceptor)
   async fetchCSRFToken() {
     try {
-      const response = await this.client.get('/auth/csrf');
-      this.csrfToken = response.data.csrf_token;
+      await this.client.get('/auth/csrf');
+      // Cookie is automatically set by the server, no need to store it
     } catch (error) {
       console.error('[api] Failed to fetch CSRF token:', error);
       throw error;

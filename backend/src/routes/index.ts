@@ -13,7 +13,6 @@ export function setupRoutes(fastify: FastifyInstance) {
   
   // Simple health check that doesn't depend on Prisma
   fastify.get('/health', async (request, reply) => {
-    console.log('[health] Health check called');
     return { status: 'ok' };
   });
   
