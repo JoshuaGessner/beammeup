@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.js';
 
@@ -8,6 +8,19 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if setup is needed and redirect if necessary
+    api.getSetupStatus()
+      .then((status) => {
+        if (status.needsSetup) {
+          navigate('/setup');
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to check setup status:', err);
+      });
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
