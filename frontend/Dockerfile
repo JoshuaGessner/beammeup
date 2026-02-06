@@ -5,7 +5,10 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig*.json ./
 COPY vite.config.ts ./
+COPY tailwind.config.js ./
+COPY postcss.config.js ./
 COPY index.html ./
+COPY public ./public/
 COPY src ./src/
 
 RUN npm install --legacy-peer-deps && npm run build
