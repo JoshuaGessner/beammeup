@@ -70,6 +70,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       );
 
       reply.code(200).send({
+        token: session.token,
         user: {
           id: user.id,
           username: user.username,
