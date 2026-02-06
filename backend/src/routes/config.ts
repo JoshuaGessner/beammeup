@@ -81,12 +81,21 @@ export async function configRoutes(fastify: FastifyInstance) {
 
       // Get old config for diff
       const oldConfig = await readConfigFile();
+      
+      // CRITICAL: Preserve AuthKey from old config (never sent to frontend for security)
+      if (oldConfig.General?.AuthKey) {
+        if (!newConfig.General) {
+          newConfig.General = {};
+        }
+        newConfig.General.AuthKey = oldConfig.General.AuthKey;
+      }
+      
       const diff = computeConfigDiff(oldConfig, newConfig);
 
       // Backup old config
       await backupConfigFile(oldConfig);
 
-      // Write new config
+      // Write new config (with preserved AuthKey)
       await writeConfigFile(newConfig);
 
       await logAuditAction(
