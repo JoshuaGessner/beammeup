@@ -1,24 +1,32 @@
 import { prisma } from '../index.js';
 import { createHash } from 'crypto';
 import { writeFile, mkdir, unlink } from 'fs/promises';
-import { join } from 'path';
+import { dirname, join } from 'path';
 import AdmZip from 'adm-zip';
 import { readConfigFile } from './config.js';
 
-let MODS_DIR = process.env.BEAMMP_RESOURCES_PATH || '/beammp/Resources/Client';
+const CONFIG_PATH = process.env.BEAMMP_CONFIG_PATH || '/beammp/ServerConfig.toml';
+const RESOURCES_PATH = process.env.BEAMMP_RESOURCES_PATH || '';
 const MAX_ZIP_SIZE = parseInt(process.env.MAX_MOD_SIZE || '500') * 1024 * 1024; // 500MB default
 
-// Ensure mods directory exists
-await mkdir(MODS_DIR, { recursive: true });
+const resolveResourcesPath = (resourceFolder: string): string => {
+  if (RESOURCES_PATH) {
+    return RESOURCES_PATH;
+  }
+
+  return join(dirname(CONFIG_PATH), resourceFolder);
+};
 
 // Try to resolve mod path from config
 async function getModsDirectory(): Promise<string> {
   try {
     const config = await readConfigFile();
     const resourceFolder = config.General?.ResourceFolder || 'Resources';
-    return `/beammp/${resourceFolder}/Client`;
+    const resourcesPath = resolveResourcesPath(resourceFolder);
+    return join(resourcesPath, 'Client');
   } catch {
-    return MODS_DIR;
+    const fallbackResources = RESOURCES_PATH || join(dirname(CONFIG_PATH), 'Resources');
+    return join(fallbackResources, 'Client');
   }
 }
 
