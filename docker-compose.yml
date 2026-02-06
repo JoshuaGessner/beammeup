@@ -15,10 +15,14 @@ services:
       BEAMMP_CONTAINER_NAME: beammp
       BEAMMP_CONFIG_PATH: /beammp-data/ServerConfig.toml
       BEAMMP_RESOURCES_PATH: /beammp-data/Resources
-      DOCKER_HOST: ${DOCKER_HOST:-npipe:////./pipe/docker_engine}
+      # Docker socket access - automatically works on Docker Desktop (Windows/Mac/Linux)
+      # For native Windows Docker (Hyper-V), set DOCKER_HOST=npipe:////./pipe/docker_engine
+      DOCKER_HOST: ${DOCKER_HOST:-unix:///var/run/docker.sock}
     volumes:
       - ./data:/app/data
       - ./beammp-config:/beammp-data
+      # Docker socket - Docker Desktop automatically handles this on Windows/Mac/Linux
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - beammeup
 
