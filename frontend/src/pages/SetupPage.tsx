@@ -9,6 +9,7 @@ export function SetupPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [authKey, setAuthKey] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setAuthData } = useAuth();
@@ -35,10 +36,15 @@ export function SetupPage() {
       return;
     }
 
+    if (!authKey || authKey.length < 10) {
+      addNotification('Error', 'BeamMP AuthKey must be at least 10 characters', 'error');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await api.createOwner(username, password, email);
+      const response = await api.createOwner(username, password, email, authKey);
       if (response.token && response.user) {
         setAuthData(response.token, response.user);
       }
@@ -90,6 +96,20 @@ export function SetupPage() {
                 disabled={loading}
                 placeholder="admin@example.com"
               />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="authKey">BeamMP AuthKey</label>
+              <input
+                id="authKey"
+                type="text"
+                value={authKey}
+                onChange={(e) => setAuthKey(e.target.value)}
+                disabled={loading}
+                required
+                placeholder="Your BeamMP server auth key"
+              />
+              <p className="form-hint">Required for BeamMP server connectivity. Get it from BeamMP.com</p>
             </div>
 
             <div className="form-group">

@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '../index.js';
 import { hashPassword } from '../auth/password.js';
 import { csrfProtection } from '../middleware/csrf.js';
+import { readConfigFile, writeConfigFile } from '../services/config.js';
 
 export async function setupRoutes(fastify: FastifyInstance) {
   // Check if setup is needed
@@ -32,10 +33,11 @@ export async function setupRoutes(fastify: FastifyInstance) {
         return reply.code(403).send({ error: 'Setup already complete' });
       }
 
-      const { username, password, email } = request.body as {
+      const { username, password, email, authKey } = request.body as {
         username: string;
         password: string;
         email?: string;
+        authKey: string;
       };
 
       if (!username || !password || username.length < 3 || password.length < 8) {
@@ -44,9 +46,30 @@ export async function setupRoutes(fastify: FastifyInstance) {
         });
       }
 
+      if (!authKey || authKey.length < 10) {
+        return reply.code(400).send({
+          error: 'BeamMP AuthKey must be at least 10 characters',
+        });
+      }
+
       const existing = await prisma.user.findUnique({ where: { username } });
       if (existing) {
         return reply.code(400).send({ error: 'Username already exists' });
+      }
+
+      try {
+        // Update config with AuthKey
+        const config = await readConfigFile();
+        if (!config.General) {
+          config.General = {};
+        }
+        config.General.AuthKey = authKey;
+        await writeConfigFile(config);
+      } catch (error) {
+        console.error('[setup] Failed to update config with AuthKey:', error);
+        return reply.code(500).send({
+          error: 'Failed to set AuthKey in configuration',
+        });
       }
 
       const passwordHash = await hashPassword(password);

@@ -133,7 +133,7 @@ class ApiClient {
     return response.data;
   }
 
-  async createOwner(username: string, password: string, email?: string) {
+  async createOwner(username: string, password: string, email?: string, authKey?: string) {
     // Fetch CSRF token before setup
     await this.fetchCSRFToken();
     
@@ -141,6 +141,7 @@ class ApiClient {
       username,
       password,
       email,
+      authKey,
     });
     if (response.data.token) {
       this.setToken(response.data.token);
