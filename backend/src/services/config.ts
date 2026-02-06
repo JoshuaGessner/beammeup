@@ -46,7 +46,11 @@ export async function readConfigFile(): Promise<BeamMPConfig> {
 
 export async function writeConfigFile(config: BeamMPConfig): Promise<void> {
   try {
-    const content = TOML.stringify(config as any);
+    let content = TOML.stringify(config as any);
+    
+    // Remove numeric underscores (e.g., 30_814 -> 30814)
+    // TOML library adds underscores for readability, but BeamMP doesn't accept them
+    content = content.replace(/(\d)_(\d)/g, '$1$2');
 
     // Atomic write: write to temp file first, then rename
     const tempPath = `${CONFIG_PATH}.${randomBytes(8).toString('hex')}`;
@@ -67,7 +71,11 @@ export async function backupConfigFile(config: BeamMPConfig): Promise<string> {
     const filename = `backup-${timestamp}.toml`;
     const backupPath = join(BACKUPS_DIR, filename);
 
-    const content = TOML.stringify(config as any);
+    let content = TOML.stringify(config as any);
+    
+    // Remove numeric underscores (e.g., 30_814 -> 30814)
+    content = content.replace(/(\d)_(\d)/g, '$1$2');
+    
     await writeFile(backupPath, content, 'utf-8');
 
     return filename;
