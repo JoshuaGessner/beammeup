@@ -73,14 +73,14 @@ export function Layout({ children }: { children: ReactNode }) {
                   navigate(item.path);
                   setMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
+                className={`w-full flex items-center text-left gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
                   location.pathname === item.path
                     ? 'bg-beam-orange/20 text-beam-orange-light border border-beam-orange/30'
                     : 'text-secondary hover:bg-hover hover:text-primary'
                 }`}
               >
-                <span className="text-lg">{item.icon}</span>
-                <span>{item.label}</span>
+                <span className="text-lg flex-shrink-0">{item.icon}</span>
+                <span className="text-left">{item.label}</span>
               </button>
             ))}
 
@@ -98,14 +98,14 @@ export function Layout({ children }: { children: ReactNode }) {
                       navigate(item.path);
                       setMobileMenuOpen(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
+                    className={`w-full flex items-center text-left gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
                       location.pathname === item.path
                         ? 'bg-beam-orange/20 text-beam-orange-light border border-beam-orange/30'
                         : 'text-secondary hover:bg-hover hover:text-primary'
                     }`}
                   >
-                    <span className="text-lg">{item.icon}</span>
-                    <span>{item.label}</span>
+                    <span className="text-lg flex-shrink-0">{item.icon}</span>
+                    <span className="text-left">{item.label}</span>
                   </button>
                 ))}
               </>

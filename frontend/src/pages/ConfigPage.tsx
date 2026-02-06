@@ -290,8 +290,8 @@ export function ConfigPage() {
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="flex items-center">
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
               <input
                 type="checkbox"
                 checked={config?.General?.AllowGuests || false}
@@ -301,11 +301,11 @@ export function ConfigPage() {
                     General: { ...config.General, AllowGuests: e.target.checked },
                   })
                 }
-                className="mr-2"
+                className="w-4 h-4 rounded accent-beam-orange cursor-pointer"
               />
-              Allow Guests
+              <span className="text-sm font-medium">Allow Guests</span>
             </label>
-            <label className="flex items-center">
+            <label className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
               <input
                 type="checkbox"
                 checked={config?.General?.LogChat || false}
@@ -315,11 +315,11 @@ export function ConfigPage() {
                     General: { ...config.General, LogChat: e.target.checked },
                   })
                 }
-                className="mr-2"
+                className="w-4 h-4 rounded accent-beam-orange cursor-pointer"
               />
-              Log Chat
+              <span className="text-sm font-medium">Log Chat</span>
             </label>
-            <label className="flex items-center">
+            <label className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
               <input
                 type="checkbox"
                 checked={config?.General?.Debug || false}
@@ -329,11 +329,11 @@ export function ConfigPage() {
                     General: { ...config.General, Debug: e.target.checked },
                   })
                 }
-                className="mr-2"
+                className="w-4 h-4 rounded accent-beam-orange cursor-pointer"
               />
-              Debug Mode
+              <span className="text-sm font-medium">Debug Mode</span>
             </label>
-            <label className="flex items-center">
+            <label className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
               <input
                 type="checkbox"
                 checked={config?.General?.Private || false}
@@ -343,9 +343,9 @@ export function ConfigPage() {
                     General: { ...config.General, Private: e.target.checked },
                   })
                 }
-                className="mr-2"
+                className="w-4 h-4 rounded accent-beam-orange cursor-pointer"
               />
-              Private Server
+              <span className="text-sm font-medium">Private Server</span>
             </label>
           </div>
         </div>
