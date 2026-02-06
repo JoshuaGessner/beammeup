@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.js';
+import { useAuth } from '../lib/auth.js';
 
 export function SetupPage() {
   const [username, setUsername] = useState('');
@@ -10,6 +11,7 @@ export function SetupPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { setAuthData } = useAuth();
 
   useEffect(() => {
     // Check if setup is needed
@@ -37,7 +39,11 @@ export function SetupPage() {
     setLoading(true);
 
     try {
-      await api.createOwner(username, password, email);
+      const response = await api.createOwner(username, password, email);
+      // Update auth context with token and user
+      if (response.token && response.user) {
+        setAuthData(response.token, response.user);
+      }
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Setup failed');
