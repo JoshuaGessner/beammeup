@@ -17,9 +17,9 @@ export interface BeamMPConfig {
     Debug: boolean;
     IP: string;
     Private: boolean;
-    InformationPacket: number;
+    InformationPacket: boolean; // Fixed: was number, should be boolean
     Name: string;
-    Tags: string[];
+    Tags: string; // Fixed: was string[], should be string (comma-separated)
     MaxCars: number;
     MaxPlayers: number;
     Map: string;
@@ -29,7 +29,7 @@ export interface BeamMPConfig {
   };
   Misc: {
     ImScaredOfUpdates: boolean;
-    UpdateReminderTime: number;
+    UpdateReminderTime: string; // Fixed: was number, should be string with format "Xd", "Xh", "Xmin", "Xs"
   };
 }
 
@@ -122,22 +122,24 @@ export function validateConfig(config: BeamMPConfig): ValidationError[] {
     }
   }
 
-  // Validate UpdateReminderTime
+  // Validate UpdateReminderTime (should be string with format like "7d", "1h", etc)
   if (config.Misc?.UpdateReminderTime !== undefined) {
     const timeStr = String(config.Misc.UpdateReminderTime);
     if (!/^\d+(\.\d+)?(s|min|h|d)$/.test(timeStr)) {
       errors.push({
         field: 'Misc.UpdateReminderTime',
-        message: 'UpdateReminderTime must match format: number + unit (s, min, h, d)',
+        message: 'UpdateReminderTime must match format: number + unit (s, min, h, d) Example: "7d"',
       });
     }
   }
 
-  // Validate Tags (normalize whitespace)
-  if (config.General?.Tags && Array.isArray(config.General.Tags)) {
-    config.General.Tags = config.General.Tags.map((tag) =>
-      tag.trim().replace(/\s+/g, ' ')
-    );
+  // Validate Tags (should be comma-separated string)
+  if (config.General?.Tags && typeof config.General.Tags === 'string') {
+    // Normalize whitespace - remove spaces after commas
+    config.General.Tags = config.General.Tags
+      .split(',')
+      .map((tag) => tag.trim())
+      .join(',');
   }
 
   // Validate Map (allow any string, but document BeamMP convention)
