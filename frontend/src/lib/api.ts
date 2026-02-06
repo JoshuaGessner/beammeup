@@ -196,12 +196,10 @@ class ApiClient {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await axios.post('/api/mods/upload', formData, {
+    const response = await this.client.post('/mods/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${this.token}`,
       },
-      withCredentials: true,
     });
     return response.data;
   }

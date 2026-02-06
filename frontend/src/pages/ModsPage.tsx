@@ -13,6 +13,8 @@ export function ModsPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadTotal, setUploadTotal] = useState(0);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,26 +38,48 @@ export function ModsPage() {
     }
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setSelectedFiles(files);
+    setUploadProgress(0);
+    setUploadTotal(files.length);
+  };
+
+  const handleUploadSelected = async () => {
+    if (selectedFiles.length === 0) return;
 
     setUploadProgress(0);
+    setUploadTotal(selectedFiles.length);
     setUploading(true);
 
-    try {
-      await api.uploadMod(file);
-      addNotification('Success', 'Mod uploaded successfully', 'success');
-      setUploadProgress(100);
-      setTimeout(() => {
-        setUploadProgress(0);
-        loadMods();
-      }, 1000);
-    } catch (err: any) {
-      addNotification('Error', err.response?.data?.error || 'Upload failed', 'error');
-    } finally {
-      setUploading(false);
+    let successCount = 0;
+
+    for (const file of selectedFiles) {
+      try {
+        await api.uploadMod(file);
+        successCount += 1;
+      } catch (err: any) {
+        addNotification('Error', err.response?.data?.error || `Upload failed: ${file.name}`, 'error');
+      } finally {
+        setUploadProgress((prev) => prev + 1);
+      }
     }
+
+    if (successCount > 0) {
+      addNotification('Success', `Uploaded ${successCount} mod(s)`, 'success');
+    }
+
+    setSelectedFiles([]);
+    setUploading(false);
+    setTimeout(() => {
+      setUploadProgress(0);
+      setUploadTotal(0);
+      loadMods();
+    }, 500);
+  };
+
+  const removeSelectedFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleDelete = async (id: string) => {
@@ -92,24 +116,67 @@ export function ModsPage() {
 
         {['OWNER', 'ADMIN'].includes(user?.role) && (
           <div className="card-lg space-y-4">
-            <h2 className="h3">Upload Mod</h2>
+            <h2 className="h3">Upload Mods</h2>
             <div className="space-y-3">
               <input
                 type="file"
                 accept=".zip"
-                onChange={handleUpload}
+                multiple
+                onChange={handleFileSelection}
                 disabled={uploading}
                 className="block w-full"
               />
-              {uploadProgress > 0 && (
+              {selectedFiles.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm text-muted">
+                    <span>{selectedFiles.length} file(s) selected</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedFiles([])}
+                      className="text-orange-300 hover:text-orange-200"
+                      disabled={uploading}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <div className="max-h-32 overflow-y-auto border border-subtle rounded-lg p-2 text-sm">
+                    {selectedFiles.map((file, index) => (
+                      <div key={`${file.name}-${index}`} className="flex items-center justify-between py-1">
+                        <span className="text-secondary">{file.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeSelectedFile(index)}
+                          className="text-xs text-red-300 hover:text-red-200"
+                          disabled={uploading}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleUploadSelected}
+                    className="btn btn-primary"
+                    disabled={uploading || selectedFiles.length === 0}
+                  >
+                    {uploading ? 'Installing Mods...' : 'Install Selected Mods'}
+                  </button>
+                </div>
+              )}
+              {uploadTotal > 0 && (
                 <div className="bg-hover rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-orange-500 h-full transition-all"
-                    style={{ width: `${uploadProgress}%` }}
+                    style={{ width: `${Math.round((uploadProgress / uploadTotal) * 100)}%` }}
                   />
                 </div>
               )}
-              {uploading && <p className="text-sm text-muted">Uploading...</p>}
+              {uploading && uploadTotal > 0 && (
+                <p className="text-sm text-muted">
+                  Uploading {uploadProgress} of {uploadTotal}...
+                </p>
+              )}
             </div>
           </div>
         )}
