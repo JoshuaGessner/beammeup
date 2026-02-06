@@ -86,8 +86,8 @@ export function DashboardPage() {
       <Layout>
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-var(--border-primary) border-t-orange-500 rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-var(--text-muted)">Loading dashboard...</p>
+            <div className="w-12 h-12 border-4 border-primary border-t-orange-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-muted">Loading dashboard...</p>
           </div>
         </div>
       </Layout>
@@ -109,7 +109,7 @@ export function DashboardPage() {
           <div className="card-lg">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-var(--text-muted) uppercase tracking-wider">Server Status</p>
+                <p className="text-sm font-medium text-muted uppercase tracking-wider">Server Status</p>
                 <div className="flex items-center gap-2 mt-2">
                   <div className={`w-3 h-3 rounded-full ${status?.running ? 'bg-green-500' : 'bg-red-500'}`}></div>
                   <p className="text-2xl font-bold">{status?.running ? 'Online' : 'Offline'}</p>
@@ -123,9 +123,9 @@ export function DashboardPage() {
 
           {/* Uptime */}
           <div className="card-lg">
-            <p className="text-sm font-medium text-var(--text-muted) uppercase tracking-wider">Uptime</p>
+            <p className="text-sm font-medium text-muted uppercase tracking-wider">Uptime</p>
             <p className="text-2xl font-bold mt-2">{formatUptime(status?.uptime)}</p>
-            <p className="text-xs text-var(--text-muted) mt-2">
+            <p className="text-xs text-muted mt-2">
               {status?.uptime ? `Since ${new Date(Date.now() - status.uptime * 1000).toLocaleDateString()}` : '—'}
             </p>
           </div>
@@ -171,15 +171,15 @@ export function DashboardPage() {
               {logsLoading ? '🔄' : '↻'} Refresh
             </button>
           </div>
-          <div className="bg-var(--bg-primary) border border-var(--border-primary) rounded-lg p-4 font-mono text-xs text-var(--text-secondary) overflow-x-auto max-h-64 overflow-y-auto">
+          <div className="bg-primary border border-primary rounded-lg p-4 font-mono text-xs text-secondary overflow-x-auto max-h-64 overflow-y-auto">
             {logs ? (
               logs.split('\n').map((line, i) => (
-                <div key={i} className="whitespace-pre-wrap break-words text-var(--text-muted) leading-relaxed">
+                <div key={i} className="whitespace-pre-wrap break-words text-muted leading-relaxed">
                   {line}
                 </div>
               ))
             ) : (
-              <p className="text-var(--text-muted) italic">No logs available</p>
+              <p className="text-muted italic">No logs available</p>
             )}
           </div>
         </div>

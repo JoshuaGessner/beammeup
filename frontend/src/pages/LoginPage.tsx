@@ -49,7 +49,7 @@ export function LoginPage() {
               B
             </div>
             <h1 className="text-2xl font-bold text-white">BeamMeUp</h1>
-            <p className="text-sm text-var(--text-muted)">BeamMP Server Administration</p>
+            <p className="text-sm text-muted">BeamMP Server Administration</p>
           </div>
 
           {/* Form */}
@@ -92,7 +92,7 @@ export function LoginPage() {
 
           {/* Footer */}
           <div className="text-center">
-            <p className="text-xs text-var(--text-muted)">
+            <p className="text-xs text-muted">
               Secure server management dashboard
             </p>
           </div>

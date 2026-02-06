@@ -185,7 +185,7 @@ export function UsersPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="table">
-                <thead className="text-left text-var(--text-secondary) border-b border-var(--border-primary)">
+                <thead className="text-left text-secondary border-b border-primary">
                   <tr>
                     <th className="pb-3 px-4">Username</th>
                     <th className="pb-3 px-4">Role</th>
@@ -197,7 +197,7 @@ export function UsersPage() {
                 <tbody>
                   {users.map((u) => (
                     editingId === u.id ? (
-                      <tr key={u.id} className="border-b border-var(--border-subtle) bg-var(--bg-hover)">
+                      <tr key={u.id} className="border-b border-subtle bg-hover">
                         <td className="py-3 px-4 font-medium">{u.username}</td>
                         <td className="py-3 px-4">
                           <select
@@ -221,7 +221,7 @@ export function UsersPage() {
                             <span className="text-sm">{editData.isActive ? 'Active' : 'Inactive'}</span>
                           </label>
                         </td>
-                        <td className="py-3 px-4 text-xs text-var(--text-muted)">
+                        <td className="py-3 px-4 text-xs text-muted">
                           {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'Never'}
                         </td>
                         <td className="py-3 px-4">
@@ -242,7 +242,7 @@ export function UsersPage() {
                         </td>
                       </tr>
                     ) : (
-                      <tr key={u.id} className="border-b border-var(--border-subtle) hover:bg-var(--bg-hover) transition-colors">
+                      <tr key={u.id} className="border-b border-subtle hover:bg-hover transition-colors">
                         <td className="py-3 px-4 font-medium text-white">{u.username}</td>
                         <td className="py-3 px-4">{u.role}</td>
                         <td className="py-3 px-4">
@@ -250,7 +250,7 @@ export function UsersPage() {
                             {u.isActive ? 'Active' : 'Inactive'}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-xs text-var(--text-muted)">
+                        <td className="py-3 px-4 text-xs text-muted">
                           {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'Never'}
                         </td>
                         <td className="py-3 px-4">

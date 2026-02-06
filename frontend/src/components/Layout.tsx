@@ -42,13 +42,13 @@ export function Layout({ children }: { children: ReactNode }) {
 
       {/* Sidebar Navigation */}
       <nav
-        className={`fixed md:static w-64 h-screen bg-var(--bg-secondary) border-r border-var(--border-primary) flex flex-col transition-transform z-40 ${
+        className={`fixed md:static w-64 h-screen bg-secondary border-r border-primary flex flex-col transition-transform z-40 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
         aria-label="Navigation"
       >
         {/* Logo */}
-        <div className="p-4 border-b border-var(--border-primary)">
+        <div className="p-4 border-b border-primary">
           <button
             onClick={() => navigate('/dashboard')}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity w-full"
@@ -58,7 +58,7 @@ export function Layout({ children }: { children: ReactNode }) {
             </div>
             <div className="flex-1 text-left">
               <div className="font-bold text-white">BeamMeUp</div>
-              <div className="text-xs text-var(--text-muted)">Server Manager</div>
+              <div className="text-xs text-muted">Server Manager</div>
             </div>
           </button>
         </div>
@@ -75,8 +75,8 @@ export function Layout({ children }: { children: ReactNode }) {
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
                   location.pathname === item.path
-                    ? 'bg-orange-600/20 text-orange-400 border border-orange-500/30'
-                    : 'text-var(--text-secondary) hover:bg-var(--bg-hover) hover:text-var(--text-primary)'
+                    ? 'bg-beam-orange/20 text-beam-orange-light border border-beam-orange/30'
+                    : 'text-secondary hover:bg-hover hover:text-primary'
                 }`}
               >
                 <span className="text-lg">{item.icon}</span>
@@ -86,8 +86,8 @@ export function Layout({ children }: { children: ReactNode }) {
 
             {isAdmin && (
               <>
-                <div className="my-3 border-t border-var(--border-primary) pt-3">
-                  <p className="px-3 text-xs uppercase font-semibold text-var(--text-muted) tracking-wider">
+                <div className="my-3 border-t border-primary pt-3">
+                  <p className="px-3 text-xs uppercase font-semibold text-muted tracking-wider">
                     Admin
                   </p>
                 </div>
@@ -100,8 +100,8 @@ export function Layout({ children }: { children: ReactNode }) {
                     }}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
                       location.pathname === item.path
-                        ? 'bg-orange-600/20 text-orange-400 border border-orange-500/30'
-                        : 'text-var(--text-secondary) hover:bg-var(--bg-hover) hover:text-var(--text-primary)'
+                        ? 'bg-beam-orange/20 text-beam-orange-light border border-beam-orange/30'
+                        : 'text-secondary hover:bg-hover hover:text-primary'
                     }`}
                   >
                     <span className="text-lg">{item.icon}</span>
@@ -114,9 +114,9 @@ export function Layout({ children }: { children: ReactNode }) {
         </div>
 
         {/* User Info and Logout */}
-        <div className="p-4 border-t border-var(--border-primary) space-y-3">
-          <div className="bg-var(--bg-hover) rounded-lg p-3">
-            <p className="text-xs text-var(--text-muted) uppercase font-semibold tracking-wider">User</p>
+        <div className="p-4 border-t border-primary space-y-3">
+          <div className="bg-hover rounded-lg p-3">
+            <p className="text-xs text-muted uppercase font-semibold tracking-wider">User</p>
             <p className="text-sm font-medium text-white truncate">{user?.username}</p>
             <p className="text-xs text-orange-400 mt-1">{user?.role || 'Viewer'}</p>
           </div>
@@ -132,7 +132,7 @@ export function Layout({ children }: { children: ReactNode }) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col w-full md:w-auto">
         {/* Top Bar */}
-        <header className="bg-var(--bg-secondary) border-b border-var(--border-primary) sticky top-0 z-20">
+        <header className="bg-secondary border-b border-primary sticky top-0 z-20">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6">
             {/* Mobile Menu Button */}
             <button
@@ -146,7 +146,7 @@ export function Layout({ children }: { children: ReactNode }) {
             {/* Page Title */}
             <div className="flex-1 md:hidden">
               {currentNavItem && (
-                <h1 className="text-lg font-bold text-white">{currentNavItem.label}</h1>
+                <h1 className="text-lg font-bold text-primary">{currentNavItem.label}</h1>
               )}
             </div>
 

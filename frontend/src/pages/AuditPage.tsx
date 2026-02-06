@@ -73,30 +73,30 @@ export function AuditPage() {
           {loading ? (
             <div className="text-center py-8">
               <div className="inline-block animate-spin">⟳</div>
-              <p className="text-var(--text-muted) mt-2">Loading audit logs...</p>
+              <p className="text-muted mt-2">Loading audit logs...</p>
             </div>
           ) : logs.length === 0 ? (
-            <p className="text-var(--text-muted) py-6">No audit logs</p>
+            <p className="text-muted py-6">No audit logs</p>
           ) : (
             <div className="space-y-3">
               {logs.map((log) => (
-                <div key={log.id} className="card p-4 hover:bg-var(--bg-hover) transition-colors">
+                <div key={log.id} className="card p-4 hover:bg-hover transition-colors">
                   <div className="flex flex-wrap justify-between items-start gap-3">
                     <div className="flex-1">
                       <p className="font-medium text-white">
                         {actionLabels[log.action] || log.action}
                       </p>
-                      <p className="text-sm text-var(--text-muted) mt-1">
+                      <p className="text-sm text-muted mt-1">
                         <span className="font-medium">{log.user.username}</span>
                         {' • '}
                         <span>{log.resource}</span>
                         {log.resourceId && <span> ({log.resourceId})</span>}
                       </p>
                       {log.details && (
-                        <p className="text-xs text-var(--text-muted) mt-2">{log.details}</p>
+                        <p className="text-xs text-muted mt-2">{log.details}</p>
                       )}
                     </div>
-                    <p className="text-xs text-var(--text-muted) whitespace-nowrap">
+                    <p className="text-xs text-muted whitespace-nowrap">
                       {new Date(log.createdAt).toLocaleString()}
                     </p>
                   </div>

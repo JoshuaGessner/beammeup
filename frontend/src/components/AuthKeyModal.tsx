@@ -55,7 +55,7 @@ export function AuthKeyModal({ isOpen, onClose, onSuccess }: AuthKeyModalProps) 
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="card-lg max-w-md w-full mx-4 space-y-4">
         <h2 className="h3">Replace AuthKey</h2>
-        <p className="text-sm text-var(--text-muted)">
+        <p className="text-sm text-muted">
           Enter your password and the new AuthKey. Your current key will not be displayed.
         </p>
 

@@ -61,7 +61,7 @@ export function SetupPage() {
               B
             </div>
             <h1 className="text-2xl font-bold text-white">Initial Setup</h1>
-            <p className="text-sm text-var(--text-muted)">Create your admin account</p>
+            <p className="text-sm text-muted">Create your admin account</p>
           </div>
 
           {/* Form */}
@@ -129,7 +129,7 @@ export function SetupPage() {
           </form>
 
           {/* Info */}
-          <div className="bg-var(--bg-hover) rounded-lg p-3 text-xs text-var(--text-muted) text-center">
+          <div className="bg-hover rounded-lg p-3 text-xs text-muted text-center">
             This is a one-time setup. Keep these credentials safe.
           </div>
         </div>

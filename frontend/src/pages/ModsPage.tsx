@@ -102,14 +102,14 @@ export function ModsPage() {
                 className="block w-full"
               />
               {uploadProgress > 0 && (
-                <div className="bg-var(--bg-hover) rounded-full h-2 overflow-hidden">
+                <div className="bg-hover rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-orange-500 h-full transition-all"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
               )}
-              {uploading && <p className="text-sm text-var(--text-muted)">Uploading...</p>}
+              {uploading && <p className="text-sm text-muted">Uploading...</p>}
             </div>
           </div>
         )}
@@ -122,11 +122,11 @@ export function ModsPage() {
           {loading ? (
             <div className="card px-6 py-4">Loading...</div>
           ) : mods.length === 0 ? (
-            <p className="text-var(--text-muted)">No mods installed</p>
+            <p className="text-muted">No mods installed</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="table">
-                <thead className="text-left text-var(--text-secondary) border-b border-var(--border-primary)">
+                <thead className="text-left text-secondary border-b border-primary">
                   <tr>
                     <th className="pb-3 px-4">Filename</th>
                     <th className="pb-3 px-4">Size</th>
@@ -138,14 +138,14 @@ export function ModsPage() {
                 </thead>
                 <tbody>
                   {mods.map((mod) => (
-                    <tr key={mod.id} className="border-b border-var(--border-subtle) hover:bg-var(--bg-hover) transition-colors">
+                    <tr key={mod.id} className="border-b border-subtle hover:bg-hover transition-colors">
                       <td className="py-3 px-4 font-medium text-white">{mod.originalName}</td>
-                      <td className="py-3 px-4 text-var(--text-muted)">{formatSize(mod.size)}</td>
-                      <td className="py-3 px-4 font-mono text-xs text-var(--text-muted)" title={mod.sha256}>
+                      <td className="py-3 px-4 text-muted">{formatSize(mod.size)}</td>
+                      <td className="py-3 px-4 font-mono text-xs text-muted" title={mod.sha256}>
                         {formatSha256(mod.sha256)}
                       </td>
                       <td className="py-3 px-4">{mod.uploadedBy?.username || 'Unknown'}</td>
-                      <td className="py-3 px-4 text-var(--text-muted) text-xs">
+                      <td className="py-3 px-4 text-muted text-xs">
                         {formatDate(mod.uploadedAt)}
                       </td>
                       {['OWNER', 'ADMIN'].includes(user?.role) && (

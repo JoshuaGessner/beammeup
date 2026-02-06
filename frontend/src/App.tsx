@@ -44,8 +44,8 @@ function RouteSelector() {
     return (
       <div className="page flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-var(--border-primary) border-t-orange-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-var(--text-muted)">Initializing...</p>
+          <div className="w-12 h-12 border-4 border-primary border-t-orange-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted">Initializing...</p>
         </div>
       </div>
     );

@@ -103,8 +103,8 @@ export function ConfigPage() {
       <Layout>
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-var(--border-primary) border-t-orange-500 rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-var(--text-muted)">Loading configuration...</p>
+            <div className="w-12 h-12 border-4 border-primary border-t-orange-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-muted">Loading configuration...</p>
           </div>
         </div>
       </Layout>
@@ -355,7 +355,7 @@ export function ConfigPage() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="font-medium">BeamMP AuthKey</p>
-                <p className="text-sm text-var(--text-muted)">
+                <p className="text-sm text-muted">
                   {authKeySet ? 'Key is set' : 'Key not set'}
                 </p>
               </div>
