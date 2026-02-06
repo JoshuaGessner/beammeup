@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth.js';
+import { useNotifications } from '../lib/notifications';
 import { api } from '../lib/api.js';
 import { Layout } from '../components/Layout.js';
 
 export function UsersPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { addNotification } = useNotifications();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -18,8 +20,6 @@ export function UsersPage() {
     email: '',
   });
   const [editData, setEditData] = useState<any>({});
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     if (!user) {
@@ -35,11 +35,10 @@ export function UsersPage() {
 
   const loadUsers = async () => {
     try {
-      setError('');
       const data = await api.listUsers();
       setUsers(data);
     } catch {
-      setError('Failed to load users');
+      addNotification('Error', 'Failed to load users', 'error');
     } finally {
       setLoading(false);
     }
@@ -47,8 +46,6 @@ export function UsersPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
 
     try {
       await api.createUser(
@@ -57,12 +54,12 @@ export function UsersPage() {
         formData.role,
         formData.email
       );
-      setSuccess('User created');
+      addNotification('Success', 'User created successfully', 'success');
       setFormData({ username: '', password: '', role: 'VIEWER', email: '' });
       setShowForm(false);
       await loadUsers();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create user');
+      addNotification('Error', err.response?.data?.error || 'Failed to create user', 'error');
     }
   };
 
@@ -72,17 +69,14 @@ export function UsersPage() {
   };
 
   const handleSaveEdit = async (id: string) => {
-    setError('');
-    setSuccess('');
-
     try {
       await api.updateUser(id, editData);
-      setSuccess('User updated');
+      addNotification('Success', 'User updated successfully', 'success');
       setEditingId(null);
       setEditData({});
       await loadUsers();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update user');
+      addNotification('Error', err.response?.data?.error || 'Failed to update user', 'error');
     }
   };
 
@@ -90,12 +84,11 @@ export function UsersPage() {
     if (!window.confirm(`Delete user "${username}"?`)) return;
 
     try {
-      setError('');
       await api.deleteUser(id);
-      setSuccess('User deleted');
+      addNotification('Success', 'User deleted', 'success');
       await loadUsers();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to delete user');
+      addNotification('Error', err.response?.data?.error || 'Failed to delete user', 'error');
     }
   };
 
@@ -103,51 +96,50 @@ export function UsersPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Manage Users</h1>
-          <p className="text-sm text-slate-400">Control access and roles for your team.</p>
+          <h1 className="h1">User Management</h1>
+          <p className="subtitle mt-1">Manage user accounts and roles</p>
         </div>
 
-        {error && <div className="bg-red-600/80 text-white p-3 rounded">{error}</div>}
-        {success && <div className="bg-emerald-600/80 text-white p-3 rounded">{success}</div>}
-
         {!showForm && (
-          <button onClick={() => setShowForm(true)} className="primary">
+          <button onClick={() => setShowForm(true)} className="btn btn-primary">
             Create User
           </button>
         )}
 
         {showForm && (
-          <div className="panel p-6">
-            <h2 className="text-xl font-bold mb-4">New User</h2>
+          <div className="card-lg">
+            <h2 className="h3 mb-4">New User</h2>
             <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Username</label>
+              <div className="form-group">
+                <label className="form-label">Username</label>
                 <input
                   type="text"
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  placeholder="john_doe"
                   required
-                  className="w-full"
+                  className="input"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Password</label>
+              <div className="form-group">
+                <label className="form-label">Password</label>
                 <input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="Enter secure password"
                   required
-                  className="w-full"
+                  className="input"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Role</label>
+              <div className="form-group">
+                <label className="form-label">Role</label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full"
+                  className="input"
                 >
                   <option>OWNER</option>
                   <option>ADMIN</option>
@@ -156,24 +148,25 @@ export function UsersPage() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Email (optional)</label>
+              <div className="form-group">
+                <label className="form-label">Email (optional)</label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full"
+                  placeholder="john@example.com"
+                  className="input"
                 />
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <button type="submit" className="primary">
+                <button type="submit" className="btn btn-primary">
                   Create
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="secondary"
+                  className="btn btn-secondary"
                 >
                   Cancel
                 </button>
@@ -182,35 +175,35 @@ export function UsersPage() {
           </div>
         )}
 
-        <div className="panel p-6 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-bold">Users</h2>
-            <span className="badge badge-warning">{users.length} Total</span>
+        <div className="card-lg space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="h3">All Users</h2>
+            <span className="badge badge-info">{users.length} Total</span>
           </div>
           {loading ? (
-            <div className="panel px-6 py-4">Loading...</div>
+            <div className="card px-6 py-4">Loading...</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="text-left text-slate-400 border-b border-slate-800">
+              <table className="table">
+                <thead className="text-left text-var(--text-secondary) border-b border-var(--border-primary)">
                   <tr>
-                    <th className="py-2 px-2">Username</th>
-                    <th className="py-2 px-2">Role</th>
-                    <th className="py-2 px-2">Status</th>
-                    <th className="py-2 px-2">Last Login</th>
-                    <th className="py-2 px-2">Actions</th>
+                    <th className="pb-3 px-4">Username</th>
+                    <th className="pb-3 px-4">Role</th>
+                    <th className="pb-3 px-4">Status</th>
+                    <th className="pb-3 px-4">Last Login</th>
+                    <th className="pb-3 px-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((u) => (
                     editingId === u.id ? (
-                      <tr key={u.id} className="border-b border-slate-800 bg-slate-800/40">
-                        <td className="py-3 px-2 font-medium">{u.username}</td>
-                        <td className="py-3 px-2">
+                      <tr key={u.id} className="border-b border-var(--border-subtle) bg-var(--bg-hover)">
+                        <td className="py-3 px-4 font-medium">{u.username}</td>
+                        <td className="py-3 px-4">
                           <select
                             value={editData.role}
                             onChange={(e) => setEditData({ ...editData, role: e.target.value })}
-                            className="bg-slate-900/70 border border-slate-700 rounded px-2 py-1 text-sm"
+                            className="input text-sm"
                           >
                             <option>OWNER</option>
                             <option>ADMIN</option>
@@ -218,30 +211,30 @@ export function UsersPage() {
                             <option>VIEWER</option>
                           </select>
                         </td>
-                        <td className="py-3 px-2">
-                          <label className="flex items-center gap-2">
+                        <td className="py-3 px-4">
+                          <label className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="checkbox"
                               checked={editData.isActive}
                               onChange={(e) => setEditData({ ...editData, isActive: e.target.checked })}
                             />
-                            {editData.isActive ? 'Active' : 'Inactive'}
+                            <span className="text-sm">{editData.isActive ? 'Active' : 'Inactive'}</span>
                           </label>
                         </td>
-                        <td className="py-3 px-2 text-xs text-slate-400">
+                        <td className="py-3 px-4 text-xs text-var(--text-muted)">
                           {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'Never'}
                         </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-4">
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleSaveEdit(u.id)}
-                              className="primary text-xs px-2 py-1"
+                              className="btn btn-primary btn-sm text-xs"
                             >
                               Save
                             </button>
                             <button
                               onClick={() => setEditingId(null)}
-                              className="secondary text-xs px-2 py-1"
+                              className="btn btn-secondary btn-sm text-xs"
                             >
                               Cancel
                             </button>
@@ -249,30 +242,30 @@ export function UsersPage() {
                         </td>
                       </tr>
                     ) : (
-                      <tr key={u.id} className="border-b border-slate-800 hover:bg-slate-800/60">
-                        <td className="py-3 px-2 font-medium">{u.username}</td>
-                        <td className="py-3 px-2">{u.role}</td>
-                        <td className="py-3 px-2">
+                      <tr key={u.id} className="border-b border-var(--border-subtle) hover:bg-var(--bg-hover) transition-colors">
+                        <td className="py-3 px-4 font-medium text-white">{u.username}</td>
+                        <td className="py-3 px-4">{u.role}</td>
+                        <td className="py-3 px-4">
                           <span className={u.isActive ? 'badge badge-success' : 'badge badge-danger'}>
                             {u.isActive ? 'Active' : 'Inactive'}
                           </span>
                         </td>
-                        <td className="py-3 px-2 text-xs text-slate-400">
+                        <td className="py-3 px-4 text-xs text-var(--text-muted)">
                           {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'Never'}
                         </td>
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-4">
                           <div className="flex gap-2">
                             {u.id !== user?.id && (
                               <>
                                 <button
                                   onClick={() => handleEdit(u)}
-                                  className="secondary text-xs px-2 py-1"
+                                  className="btn btn-secondary btn-sm text-xs"
                                 >
                                   Edit
                                 </button>
                                 <button
                                   onClick={() => handleDelete(u.id, u.username)}
-                                  className="danger text-xs px-2 py-1"
+                                  className="btn btn-danger btn-sm text-xs"
                                 >
                                   Delete
                                 </button>

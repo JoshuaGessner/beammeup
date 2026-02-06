@@ -2,17 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { useAuth } from '../lib/auth.js';
+import { useNotifications } from '../lib/notifications';
 
 export function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { addNotification } = useNotifications();
 
   useEffect(() => {
-    // Check if setup is needed and redirect if necessary
     api.getSetupStatus()
       .then((status) => {
         if (status.needsSetup) {
@@ -26,61 +26,76 @@ export function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
       await login(username, password);
       navigate('/dashboard');
+      addNotification('Welcome back!', `Signed in as ${username}`, 'success');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed');
+      addNotification('Login Failed', err.response?.data?.error || 'Invalid credentials', 'error');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6">
+    <div className="page flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
-        <div className="panel p-8 space-y-6">
+        <div className="card-lg space-y-6">
+          {/* Logo */}
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">
-              <span className="text-white">Beam</span>
-              <span className="text-orange-400">MeUp</span>
-            </h1>
-            <p className="text-sm text-slate-400">Sign in to manage your BeamMP server</p>
+            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-orange-600 to-orange-700 flex items-center justify-center font-bold text-white text-3xl mx-auto">
+              B
+            </div>
+            <h1 className="text-2xl font-bold text-white">BeamMeUp</h1>
+            <p className="text-sm text-var(--text-muted)">BeamMP Server Administration</p>
           </div>
 
-          {error && <div className="bg-red-600/80 text-white p-3 rounded">{error}</div>}
-
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Username</label>
+            <div className="form-group">
+              <label htmlFor="username">Username</label>
               <input
+                id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={loading}
                 autoFocus
-                className="w-full"
+                required
+                placeholder="admin"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Password</label>
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
               <input
+                id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
-                className="w-full"
+                required
+                placeholder="••••••••"
               />
             </div>
 
-            <button type="submit" className="w-full primary" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary w-full"
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
+
+          {/* Footer */}
+          <div className="text-center">
+            <p className="text-xs text-var(--text-muted)">
+              Secure server management dashboard
+            </p>
+          </div>
         </div>
       </div>
     </div>

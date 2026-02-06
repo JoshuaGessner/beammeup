@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth.js';
+import { useNotifications } from '../lib/notifications';
 import { api } from '../lib/api.js';
 import { Layout } from '../components/Layout.js';
 import { AuthKeyModal } from '../components/AuthKeyModal.js';
@@ -33,12 +34,11 @@ const formatMapLabel = (value: string) => {
 export function ConfigPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { addNotification } = useNotifications();
   const [originalConfig, setOriginalConfig] = useState<any>(null);
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [isDirty, setIsDirty] = useState(false);
   const [authKeySet, setAuthKeySet] = useState<boolean | null>(null);
   const [showAuthKeyModal, setShowAuthKeyModal] = useState(false);
@@ -74,34 +74,42 @@ export function ConfigPage() {
   }, [config, originalConfig]);
 
   const handleSave = async (restart: boolean = false) => {
-    setError('');
-    setSuccess('');
     setSaving(true);
 
     try {
       await api.updateConfig(config);
-      setSuccess('Configuration saved successfully');
       setOriginalConfig(config);
       setIsDirty(false);
+      addNotification('Success', 'Configuration saved', 'success');
 
       if (restart && ['OWNER', 'ADMIN'].includes(user?.role)) {
         await api.restartServer();
-        setSuccess('Configuration saved and server restarted');
+        addNotification('Success', 'Server restarted successfully', 'success');
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to save config');
+      addNotification('Error', err.response?.data?.error || 'Failed to save config', 'error');
     } finally {
       setSaving(false);
     }
   };
 
   const handleAuthKeyReplaced = () => {
-    setSuccess('AuthKey replaced successfully');
+    addNotification('Success', 'AuthKey replaced successfully', 'success');
     setAuthKeySet(true);
-    setTimeout(() => setSuccess(''), 3000);
   };
 
-  if (loading) return <Layout><div className="panel px-6 py-4">Loading...</div></Layout>;
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-var(--border-primary) border-t-orange-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-var(--text-muted)">Loading configuration...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   const currentMapValue = config?.General?.Map || '';
   const currentMapLabel = currentMapValue ? formatMapLabel(currentMapValue) : 'Select a map';
@@ -115,21 +123,18 @@ export function ConfigPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Server Configuration</h1>
-          <p className="text-sm text-slate-400">Tune your server and save changes safely.</p>
+          <h1 className="h1">Server Configuration</h1>
+          <p className="subtitle mt-1">Adjust server settings and gameplay options</p>
         </div>
 
         {isDirty && (
-          <div className="bg-amber-500/20 text-amber-200 p-3 rounded border border-amber-400/30 font-semibold">
-            You have unsaved changes
+          <div className="bg-amber-500/15 text-amber-200 p-3 rounded-lg border border-amber-500/30">
+            <span className="font-semibold">●</span> You have unsaved changes
           </div>
         )}
 
-        {error && <div className="bg-red-600/80 text-white p-3 rounded">{error}</div>}
-        {success && <div className="bg-emerald-600/80 text-white p-3 rounded">{success}</div>}
-
-        <div className="panel p-6 space-y-6">
-          <h2 className="text-xl font-bold">General Settings</h2>
+        <div className="card-lg space-y-6">
+          <h2 className="h3">General Settings</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -329,20 +334,20 @@ export function ConfigPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <button onClick={() => handleSave(false)} className="primary" disabled={saving}>
+        <div className="flex flex-wrap gap-3">
+          <button onClick={() => handleSave(false)} className="btn btn-primary" disabled={saving}>
             {saving ? 'Saving...' : 'Save Configuration'}
           </button>
           {['OWNER', 'ADMIN'].includes(user?.role) && (
-            <button onClick={() => handleSave(true)} className="primary" disabled={saving}>
+            <button onClick={() => handleSave(true)} className="btn btn-primary" disabled={saving}>
               {saving ? 'Saving...' : 'Save & Restart Server'}
             </button>
           )}
         </div>
 
         {['OWNER', 'ADMIN'].includes(user?.role) && (
-          <div className="panel p-6 space-y-4">
-            <h2 className="text-xl font-bold">Security</h2>
+          <div className="card-lg space-y-4">
+            <h2 className="h3">Security</h2>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="font-medium">BeamMP AuthKey</p>

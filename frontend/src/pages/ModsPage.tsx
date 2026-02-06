@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth.js';
+import { useNotifications } from '../lib/notifications';
 import { api } from '../lib/api.js';
 import { Layout } from '../components/Layout.js';
 
 export function ModsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { addNotification } = useNotifications();
   const [mods, setMods] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,11 +27,10 @@ export function ModsPage() {
 
   const loadMods = async () => {
     try {
-      setError('');
       const data = await api.listMods();
       setMods(data);
     } catch {
-      setError('Failed to load mods');
+      addNotification('Error', 'Failed to load mods', 'error');
     } finally {
       setLoading(false);
     }
@@ -41,21 +40,19 @@ export function ModsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setError('');
-    setSuccess('');
     setUploadProgress(0);
     setUploading(true);
 
     try {
       await api.uploadMod(file);
-      setSuccess('Mod uploaded successfully');
+      addNotification('Success', 'Mod uploaded successfully', 'success');
       setUploadProgress(100);
       setTimeout(() => {
         setUploadProgress(0);
         loadMods();
       }, 1000);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Upload failed');
+      addNotification('Error', err.response?.data?.error || 'Upload failed', 'error');
     } finally {
       setUploading(false);
     }
@@ -63,13 +60,12 @@ export function ModsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      setError('');
       await api.deleteMod(id);
-      setSuccess('Mod deleted');
+      addNotification('Success', 'Mod deleted', 'success');
       setDeleteConfirm(null);
       await loadMods();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Delete failed');
+      addNotification('Error', err.response?.data?.error || 'Delete failed', 'error');
     }
   };
 
@@ -90,16 +86,13 @@ export function ModsPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Manage Mods</h1>
-          <p className="text-sm text-slate-400">Upload, review, and remove mod archives.</p>
+          <h1 className="h1">Mod Management</h1>
+          <p className="subtitle mt-1">Upload and manage server mod files</p>
         </div>
 
-        {error && <div className="bg-red-600/80 text-white p-3 rounded">{error}</div>}
-        {success && <div className="bg-emerald-600/80 text-white p-3 rounded">{success}</div>}
-
         {['OWNER', 'ADMIN'].includes(user?.role) && (
-          <div className="panel p-6 space-y-4">
-            <h2 className="text-xl font-bold">Upload Mod</h2>
+          <div className="card-lg space-y-4">
+            <h2 className="h3">Upload Mod</h2>
             <div className="space-y-3">
               <input
                 type="file"
@@ -109,65 +102,65 @@ export function ModsPage() {
                 className="block w-full"
               />
               {uploadProgress > 0 && (
-                <div className="bg-slate-800 rounded-full h-2 overflow-hidden">
+                <div className="bg-var(--bg-hover) rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-orange-500 h-full transition-all"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
               )}
-              {uploading && <p className="text-sm text-slate-400">Uploading...</p>}
+              {uploading && <p className="text-sm text-var(--text-muted)">Uploading...</p>}
             </div>
           </div>
         )}
 
-        <div className="panel p-6 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-bold">Installed Mods</h2>
+        <div className="card-lg space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="h3">Installed Mods</h2>
             <span className="badge badge-warning">{mods.length} Total</span>
           </div>
           {loading ? (
-            <div className="panel px-6 py-4">Loading...</div>
+            <div className="card px-6 py-4">Loading...</div>
           ) : mods.length === 0 ? (
-            <p className="text-slate-400">No mods installed</p>
+            <p className="text-var(--text-muted)">No mods installed</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="text-left text-slate-400 border-b border-slate-800">
+              <table className="table">
+                <thead className="text-left text-var(--text-secondary) border-b border-var(--border-primary)">
                   <tr>
-                    <th className="pb-3 px-2">Filename</th>
-                    <th className="pb-3 px-2">Size</th>
-                    <th className="pb-3 px-2">SHA256</th>
-                    <th className="pb-3 px-2">Uploaded By</th>
-                    <th className="pb-3 px-2">Date</th>
-                    {['OWNER', 'ADMIN'].includes(user?.role) && <th className="pb-3 px-2">Action</th>}
+                    <th className="pb-3 px-4">Filename</th>
+                    <th className="pb-3 px-4">Size</th>
+                    <th className="pb-3 px-4">SHA256</th>
+                    <th className="pb-3 px-4">Uploaded By</th>
+                    <th className="pb-3 px-4">Date</th>
+                    {['OWNER', 'ADMIN'].includes(user?.role) && <th className="pb-3 px-4">Action</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {mods.map((mod) => (
-                    <tr key={mod.id} className="border-b border-slate-800 hover:bg-slate-800/60">
-                      <td className="py-3 px-2 font-medium text-white">{mod.originalName}</td>
-                      <td className="py-3 px-2 text-slate-400">{formatSize(mod.size)}</td>
-                      <td className="py-3 px-2 font-mono text-xs text-slate-400" title={mod.sha256}>
+                    <tr key={mod.id} className="border-b border-var(--border-subtle) hover:bg-var(--bg-hover) transition-colors">
+                      <td className="py-3 px-4 font-medium text-white">{mod.originalName}</td>
+                      <td className="py-3 px-4 text-var(--text-muted)">{formatSize(mod.size)}</td>
+                      <td className="py-3 px-4 font-mono text-xs text-var(--text-muted)" title={mod.sha256}>
                         {formatSha256(mod.sha256)}
                       </td>
-                      <td className="py-3 px-2">{mod.uploadedBy?.username || 'Unknown'}</td>
-                      <td className="py-3 px-2 text-slate-400 text-xs">
+                      <td className="py-3 px-4">{mod.uploadedBy?.username || 'Unknown'}</td>
+                      <td className="py-3 px-4 text-var(--text-muted) text-xs">
                         {formatDate(mod.uploadedAt)}
                       </td>
                       {['OWNER', 'ADMIN'].includes(user?.role) && (
-                        <td className="py-3 px-2">
+                        <td className="py-3 px-4">
                           {deleteConfirm === mod.id ? (
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleDelete(mod.id)}
-                                className="danger text-xs px-2 py-1"
+                                className="btn btn-danger btn-sm text-xs"
                               >
                                 Confirm
                               </button>
                               <button
                                 onClick={() => setDeleteConfirm(null)}
-                                className="secondary text-xs px-2 py-1"
+                                className="btn btn-secondary btn-sm text-xs"
                               >
                                 Cancel
                               </button>
@@ -175,7 +168,7 @@ export function ModsPage() {
                           ) : (
                             <button
                               onClick={() => setDeleteConfirm(mod.id)}
-                              className="danger text-xs px-2 py-1"
+                              className="btn btn-danger btn-sm text-xs"
                             >
                               Delete
                             </button>
