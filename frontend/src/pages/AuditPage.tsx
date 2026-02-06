@@ -57,38 +57,41 @@ export function AuditPage() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Audit Log</h1>
+        <div className="flex flex-wrap justify-between items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Audit Log</h1>
+            <p className="text-sm text-slate-400">Track configuration, user, and mod activity.</p>
+          </div>
           <button onClick={handleExport} className="secondary text-sm">
             Export as CSV
           </button>
         </div>
 
-        {error && <div className="bg-red-600 text-white p-3 rounded">{error}</div>}
+        {error && <div className="bg-red-600/80 text-white p-3 rounded">{error}</div>}
 
-        <div className="bg-gray-800 rounded-lg p-6">
+        <div className="panel p-6">
           {loading ? (
-            <p>Loading...</p>
+            <div className="panel px-6 py-4">Loading...</div>
           ) : logs.length === 0 ? (
-            <p className="text-gray-400">No audit logs</p>
+            <p className="text-slate-400">No audit logs</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {logs.map((log) => (
-                <div key={log.id} className="bg-gray-700 p-4 rounded">
-                  <div className="flex justify-between items-start">
+                <div key={log.id} className="panel-soft p-4">
+                  <div className="flex flex-wrap justify-between items-start gap-3">
                     <div>
                       <p className="font-medium">
                         {actionLabels[log.action] || log.action}
                       </p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-slate-400">
                         {log.user.username} • {log.resource}
                         {log.resourceId && ` (${log.resourceId})`}
                       </p>
                       {log.details && (
-                        <p className="text-xs text-gray-500 mt-1">{log.details}</p>
+                        <p className="text-xs text-slate-500 mt-1">{log.details}</p>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-slate-400">
                       {new Date(log.createdAt).toLocaleString()}
                     </p>
                   </div>

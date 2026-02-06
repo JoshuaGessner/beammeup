@@ -51,10 +51,10 @@ export function AuthKeyModal({ isOpen, onClose, onSuccess }: AuthKeyModalProps) 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-900 rounded-lg p-6 max-w-md w-full mx-4 space-y-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="panel p-6 max-w-md w-full mx-4 space-y-4">
         <h2 className="text-xl font-bold">Replace AuthKey</h2>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-slate-400">
           Enter your password and the new AuthKey. Your current key will not be displayed.
         </p>
 
@@ -65,7 +65,7 @@ export function AuthKeyModal({ isOpen, onClose, onSuccess }: AuthKeyModalProps) 
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white placeholder-gray-500"
+              className="w-full"
               placeholder="Enter your password"
               disabled={loading}
             />
@@ -77,7 +77,7 @@ export function AuthKeyModal({ isOpen, onClose, onSuccess }: AuthKeyModalProps) 
               type="password"
               value={newAuthKey}
               onChange={(e) => setNewAuthKey(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white placeholder-gray-500"
+              className="w-full"
               placeholder="Enter new AuthKey"
               disabled={loading}
             />
@@ -89,26 +89,26 @@ export function AuthKeyModal({ isOpen, onClose, onSuccess }: AuthKeyModalProps) 
               type="password"
               value={confirmAuthKey}
               onChange={(e) => setConfirmAuthKey(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white placeholder-gray-500"
+              className="w-full"
               placeholder="Confirm new AuthKey"
               disabled={loading}
             />
           </div>
 
-          {error && <div className="bg-red-600 text-white p-3 rounded text-sm">{error}</div>}
+          {error && <div className="bg-red-600/80 text-white p-3 rounded text-sm">{error}</div>}
 
           <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded font-medium disabled:opacity-50"
+              className="flex-1 secondary disabled:opacity-50"
               disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 rounded font-medium disabled:opacity-50"
+              className="flex-1 danger disabled:opacity-50"
               disabled={loading}
             >
               {loading ? 'Replacing...' : 'Replace AuthKey'}

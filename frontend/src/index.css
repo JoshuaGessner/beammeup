@@ -1,29 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-gray-900 text-white;
+@layer base {
+  :root {
+    --beam-orange: #ff6a00;
+    --beam-orange-soft: #ff8a1f;
+    --beam-graphite: #0b0f14;
+    --beam-ink: #101722;
+    --beam-line: #1f2a37;
+    --beam-text: #f8fafc;
+    --beam-muted: #94a3b8;
+  }
+
+  body {
+    font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+    background: radial-gradient(1200px 800px at 10% -10%, rgba(255, 106, 0, 0.18), transparent 55%),
+      radial-gradient(900px 600px at 90% 10%, rgba(56, 189, 248, 0.12), transparent 50%),
+      var(--beam-graphite);
+    color: var(--beam-text);
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: rgba(255, 106, 0, 0.35);
+  }
+
+  input,
+  textarea,
+  select {
+    @apply bg-slate-900/70 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/60 focus:border-orange-400;
+  }
+
+  label {
+    @apply text-slate-200;
+  }
+
+  button {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/70;
+  }
+
+  a {
+    @apply text-orange-300 hover:text-orange-200;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', 'SFMono-Regular', monospace;
+  }
 }
 
-input,
-textarea,
-select {
-  @apply bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500;
+@layer components {
+  .panel {
+    @apply bg-slate-900/70 border border-slate-800 rounded-2xl shadow-xl shadow-black/20;
+  }
+
+  .panel-soft {
+    @apply bg-slate-900/50 border border-slate-800 rounded-2xl;
+  }
+
+  .btn {
+    @apply px-4 py-2 rounded-lg font-semibold transition-colors;
+  }
+
+  .btn-primary {
+    @apply bg-orange-600 hover:bg-orange-500 text-white;
+  }
+
+  .btn-secondary {
+    @apply bg-slate-800 hover:bg-slate-700 text-slate-100;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-500 text-white;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent hover:bg-slate-800 text-slate-200;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold;
+  }
+
+  .badge-success {
+    @apply bg-emerald-500/15 text-emerald-300 border border-emerald-500/30;
+  }
+
+  .badge-warning {
+    @apply bg-amber-500/15 text-amber-300 border border-amber-500/30;
+  }
+
+  .badge-danger {
+    @apply bg-red-500/15 text-red-300 border border-red-500/30;
+  }
+
+  .nav-link {
+    @apply text-sm font-semibold text-slate-300 hover:text-white transition-colors;
+  }
+
+  .nav-link-active {
+    @apply text-white;
+  }
+
+  .table-shell {
+    @apply w-full text-sm border-separate border-spacing-y-2;
+  }
+
+  .table-row {
+    @apply bg-slate-900/70 border border-slate-800 rounded-xl;
+  }
+
+  .field-hint {
+    @apply text-xs text-slate-400;
+  }
 }
 
-button {
-  @apply px-4 py-2 rounded font-medium transition-colors;
+.primary {
+  @apply btn btn-primary;
 }
 
-button.primary {
-  @apply bg-blue-600 hover:bg-blue-700;
+.secondary {
+  @apply btn btn-secondary;
 }
 
-button.danger {
-  @apply bg-red-600 hover:bg-red-700;
-}
-
-button.secondary {
-  @apply bg-gray-700 hover:bg-gray-600;
+.danger {
+  @apply btn btn-danger;
 }

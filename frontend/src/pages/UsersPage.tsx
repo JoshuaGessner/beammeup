@@ -102,10 +102,13 @@ export function UsersPage() {
   return (
     <Layout>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Manage Users</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Manage Users</h1>
+          <p className="text-sm text-slate-400">Control access and roles for your team.</p>
+        </div>
 
-        {error && <div className="bg-red-600 text-white p-3 rounded">{error}</div>}
-        {success && <div className="bg-green-600 text-white p-3 rounded">{success}</div>}
+        {error && <div className="bg-red-600/80 text-white p-3 rounded">{error}</div>}
+        {success && <div className="bg-emerald-600/80 text-white p-3 rounded">{success}</div>}
 
         {!showForm && (
           <button onClick={() => setShowForm(true)} className="primary">
@@ -114,7 +117,7 @@ export function UsersPage() {
         )}
 
         {showForm && (
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className="panel p-6">
             <h2 className="text-xl font-bold mb-4">New User</h2>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
@@ -124,7 +127,7 @@ export function UsersPage() {
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                   required
-                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+                  className="w-full"
                 />
               </div>
 
@@ -135,7 +138,7 @@ export function UsersPage() {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
-                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+                  className="w-full"
                 />
               </div>
 
@@ -144,7 +147,7 @@ export function UsersPage() {
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+                  className="w-full"
                 >
                   <option>OWNER</option>
                   <option>ADMIN</option>
@@ -159,11 +162,11 @@ export function UsersPage() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+                  className="w-full"
                 />
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button type="submit" className="primary">
                   Create
                 </button>
@@ -179,14 +182,17 @@ export function UsersPage() {
           </div>
         )}
 
-        <div className="bg-gray-800 rounded-lg p-6 space-y-4">
-          <h2 className="text-xl font-bold">Users ({users.length})</h2>
+        <div className="panel p-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xl font-bold">Users</h2>
+            <span className="badge badge-warning">{users.length} Total</span>
+          </div>
           {loading ? (
-            <p>Loading...</p>
+            <div className="panel px-6 py-4">Loading...</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="text-left text-gray-400 border-b border-gray-700">
+                <thead className="text-left text-slate-400 border-b border-slate-800">
                   <tr>
                     <th className="py-2 px-2">Username</th>
                     <th className="py-2 px-2">Role</th>
@@ -198,13 +204,13 @@ export function UsersPage() {
                 <tbody>
                   {users.map((u) => (
                     editingId === u.id ? (
-                      <tr key={u.id} className="border-b border-gray-700 bg-gray-700/50">
-                        <td className="py-3 px-2">{u.username}</td>
+                      <tr key={u.id} className="border-b border-slate-800 bg-slate-800/40">
+                        <td className="py-3 px-2 font-medium">{u.username}</td>
                         <td className="py-3 px-2">
                           <select
                             value={editData.role}
                             onChange={(e) => setEditData({ ...editData, role: e.target.value })}
-                            className="bg-gray-600 border border-gray-500 rounded px-2 py-1 text-sm"
+                            className="bg-slate-900/70 border border-slate-700 rounded px-2 py-1 text-sm"
                           >
                             <option>OWNER</option>
                             <option>ADMIN</option>
@@ -222,20 +228,20 @@ export function UsersPage() {
                             {editData.isActive ? 'Active' : 'Inactive'}
                           </label>
                         </td>
-                        <td className="py-3 px-2 text-xs text-gray-400">
+                        <td className="py-3 px-2 text-xs text-slate-400">
                           {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'Never'}
                         </td>
                         <td className="py-3 px-2">
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleSaveEdit(u.id)}
-                              className="px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs"
+                              className="primary text-xs px-2 py-1"
                             >
                               Save
                             </button>
                             <button
                               onClick={() => setEditingId(null)}
-                              className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-xs"
+                              className="secondary text-xs px-2 py-1"
                             >
                               Cancel
                             </button>
@@ -243,11 +249,15 @@ export function UsersPage() {
                         </td>
                       </tr>
                     ) : (
-                      <tr key={u.id} className="border-b border-gray-700 hover:bg-gray-700/50">
-                        <td className="py-3 px-2">{u.username}</td>
+                      <tr key={u.id} className="border-b border-slate-800 hover:bg-slate-800/60">
+                        <td className="py-3 px-2 font-medium">{u.username}</td>
                         <td className="py-3 px-2">{u.role}</td>
-                        <td className="py-3 px-2">{u.isActive ? '✓ Active' : '✗ Inactive'}</td>
-                        <td className="py-3 px-2 text-xs text-gray-400">
+                        <td className="py-3 px-2">
+                          <span className={u.isActive ? 'badge badge-success' : 'badge badge-danger'}>
+                            {u.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-xs text-slate-400">
                           {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'Never'}
                         </td>
                         <td className="py-3 px-2">
@@ -256,13 +266,13 @@ export function UsersPage() {
                               <>
                                 <button
                                   onClick={() => handleEdit(u)}
-                                  className="px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs"
+                                  className="secondary text-xs px-2 py-1"
                                 >
                                   Edit
                                 </button>
                                 <button
                                   onClick={() => handleDelete(u.id, u.username)}
-                                  className="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-xs"
+                                  className="danger text-xs px-2 py-1"
                                 >
                                   Delete
                                 </button>

@@ -40,7 +40,11 @@ function RouteSelector() {
   console.log('[RouteSelector] State - isAuthenticated:', isAuthenticated, 'needsSetup:', needsSetup);
 
   if (needsSetup === null && !isAuthenticated) {
-    return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-200">
+        <div className="panel px-6 py-4">Loading...</div>
+      </div>
+    );
   }
 
   return (

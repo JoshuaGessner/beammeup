@@ -89,15 +89,18 @@ export function ModsPage() {
   return (
     <Layout>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Manage Mods</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Manage Mods</h1>
+          <p className="text-sm text-slate-400">Upload, review, and remove mod archives.</p>
+        </div>
 
-        {error && <div className="bg-red-600 text-white p-3 rounded">{error}</div>}
-        {success && <div className="bg-green-600 text-white p-3 rounded">{success}</div>}
+        {error && <div className="bg-red-600/80 text-white p-3 rounded">{error}</div>}
+        {success && <div className="bg-emerald-600/80 text-white p-3 rounded">{success}</div>}
 
         {['OWNER', 'ADMIN'].includes(user?.role) && (
-          <div className="bg-gray-800 rounded-lg p-6 space-y-4">
+          <div className="panel p-6 space-y-4">
             <h2 className="text-xl font-bold">Upload Mod</h2>
-            <div className="relative">
+            <div className="space-y-3">
               <input
                 type="file"
                 accept=".zip"
@@ -106,47 +109,50 @@ export function ModsPage() {
                 className="block w-full"
               />
               {uploadProgress > 0 && (
-                <div className="mt-2 bg-gray-700 rounded h-2 overflow-hidden">
+                <div className="bg-slate-800 rounded-full h-2 overflow-hidden">
                   <div
-                    className="bg-green-600 h-full transition-all"
+                    className="bg-orange-500 h-full transition-all"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
               )}
-              {uploading && <p className="text-sm text-gray-400 mt-2">Uploading...</p>}
+              {uploading && <p className="text-sm text-slate-400">Uploading...</p>}
             </div>
           </div>
         )}
 
-        <div className="bg-gray-800 rounded-lg p-6 space-y-4">
-          <h2 className="text-xl font-bold">Installed Mods ({mods.length})</h2>
+        <div className="panel p-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xl font-bold">Installed Mods</h2>
+            <span className="badge badge-warning">{mods.length} Total</span>
+          </div>
           {loading ? (
-            <p>Loading...</p>
+            <div className="panel px-6 py-4">Loading...</div>
           ) : mods.length === 0 ? (
-            <p className="text-gray-400">No mods installed</p>
+            <p className="text-slate-400">No mods installed</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="text-left text-gray-400 border-b border-gray-700">
+                <thead className="text-left text-slate-400 border-b border-slate-800">
                   <tr>
-                    <th className="pb-2 px-2">Filename</th>
-                    <th className="pb-2 px-2">Size</th>
-                    <th className="pb-2 px-2">SHA256</th>
-                    <th className="pb-2 px-2">Uploaded By</th>
-                    <th className="pb-2 px-2">Date</th>
-                    {['OWNER', 'ADMIN'].includes(user?.role) && <th className="pb-2 px-2">Action</th>}
+                    <th className="pb-3 px-2">Filename</th>
+                    <th className="pb-3 px-2">Size</th>
+                    <th className="pb-3 px-2">SHA256</th>
+                    <th className="pb-3 px-2">Uploaded By</th>
+                    <th className="pb-3 px-2">Date</th>
+                    {['OWNER', 'ADMIN'].includes(user?.role) && <th className="pb-3 px-2">Action</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {mods.map((mod) => (
-                    <tr key={mod.id} className="border-b border-gray-700 hover:bg-gray-700/50">
-                      <td className="py-3 px-2">{mod.originalName}</td>
-                      <td className="py-3 px-2 text-gray-400">{formatSize(mod.size)}</td>
-                      <td className="py-3 px-2 font-mono text-xs text-gray-400" title={mod.sha256}>
+                    <tr key={mod.id} className="border-b border-slate-800 hover:bg-slate-800/60">
+                      <td className="py-3 px-2 font-medium text-white">{mod.originalName}</td>
+                      <td className="py-3 px-2 text-slate-400">{formatSize(mod.size)}</td>
+                      <td className="py-3 px-2 font-mono text-xs text-slate-400" title={mod.sha256}>
                         {formatSha256(mod.sha256)}
                       </td>
                       <td className="py-3 px-2">{mod.uploadedBy?.username || 'Unknown'}</td>
-                      <td className="py-3 px-2 text-gray-400 text-xs">
+                      <td className="py-3 px-2 text-slate-400 text-xs">
                         {formatDate(mod.uploadedAt)}
                       </td>
                       {['OWNER', 'ADMIN'].includes(user?.role) && (
@@ -155,13 +161,13 @@ export function ModsPage() {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleDelete(mod.id)}
-                                className="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-xs"
+                                className="danger text-xs px-2 py-1"
                               >
                                 Confirm
                               </button>
                               <button
                                 onClick={() => setDeleteConfirm(null)}
-                                className="px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs"
+                                className="secondary text-xs px-2 py-1"
                               >
                                 Cancel
                               </button>
@@ -169,7 +175,7 @@ export function ModsPage() {
                           ) : (
                             <button
                               onClick={() => setDeleteConfirm(mod.id)}
-                              className="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-xs"
+                              className="danger text-xs px-2 py-1"
                             >
                               Delete
                             </button>

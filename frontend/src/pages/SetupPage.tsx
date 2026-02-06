@@ -53,16 +53,21 @@ export function SetupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center px-6">
       <div className="w-full max-w-md">
-        <div className="bg-gray-800 rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-center mb-2">BeamMeUp</h1>
-          <p className="text-gray-400 text-center mb-8">Initial Setup</p>
+        <div className="panel p-8 space-y-6">
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+              <span className="text-white">Beam</span>
+              <span className="text-orange-400">MeUp</span>
+            </h1>
+            <p className="text-sm text-slate-400">Initial setup for your BeamMP server</p>
+          </div>
 
-          {error && <div className="bg-red-600 text-white p-3 rounded mb-4">{error}</div>}
+          {error && <div className="bg-red-600/80 text-white p-3 rounded">{error}</div>}
 
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
               <label className="block text-sm font-medium mb-2">Username</label>
               <input
                 type="text"
@@ -70,20 +75,22 @@ export function SetupPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={loading}
                 required
+                className="w-full"
               />
             </div>
 
-            <div className="mb-4">
+            <div>
               <label className="block text-sm font-medium mb-2">Email (optional)</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
+                className="w-full"
               />
             </div>
 
-            <div className="mb-4">
+            <div>
               <label className="block text-sm font-medium mb-2">Password</label>
               <input
                 type="password"
@@ -91,10 +98,11 @@ export function SetupPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
                 required
+                className="w-full"
               />
             </div>
 
-            <div className="mb-6">
+            <div>
               <label className="block text-sm font-medium mb-2">Confirm Password</label>
               <input
                 type="password"
@@ -102,6 +110,7 @@ export function SetupPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={loading}
                 required
+                className="w-full"
               />
             </div>
 

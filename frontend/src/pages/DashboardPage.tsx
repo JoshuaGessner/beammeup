@@ -83,74 +83,85 @@ export function DashboardPage() {
     return `${days}d ${hours}h ${minutes}m`;
   };
 
-  if (loading) return <Layout><div>Loading...</div></Layout>;
+  if (loading) return <Layout><div className="panel px-6 py-4">Loading...</div></Layout>;
 
   return (
     <Layout>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <p className="text-sm text-slate-400">Live status and quick actions</p>
+          </div>
+        </div>
 
-        {error && <div className="bg-red-600 text-white p-3 rounded">{error}</div>}
-        {success && <div className="bg-green-600 text-white p-3 rounded">{success}</div>}
+        {error && <div className="bg-red-600/80 text-white p-3 rounded">{error}</div>}
+        {success && <div className="bg-emerald-600/80 text-white p-3 rounded">{success}</div>}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gray-800 rounded-lg p-6 space-y-4">
-            <h2 className="text-xl font-bold">Server Status</h2>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-400">State</span>
-                <span className={status?.running ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>
-                  {status?.running ? '✅ Running' : '❌ Stopped'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-400">Uptime</span>
-                <span className="text-white">{formatUptime(status?.uptime)}</span>
-              </div>
-              {['OWNER', 'ADMIN', 'OPERATOR'].includes(user?.role) && (
-                <button
-                  onClick={handleRestart}
-                  disabled={restarting}
-                  className="w-full mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 rounded font-medium"
-                >
-                  {restarting ? '🔄 Restarting...' : '🔄 Restart Server'}
-                </button>
-              )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="panel p-6 space-y-4 lg:col-span-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold">Server Status</h2>
+              <span className={`badge ${status?.running ? 'badge-success' : 'badge-danger'}`}>
+                {status?.running ? 'Running' : 'Stopped'}
+              </span>
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="panel-soft p-4">
+                <p className="text-xs uppercase tracking-wide text-slate-400">State</p>
+                <p className="text-lg font-semibold text-white">
+                  {status?.running ? 'Online' : 'Offline'}
+                </p>
+              </div>
+              <div className="panel-soft p-4">
+                <p className="text-xs uppercase tracking-wide text-slate-400">Uptime</p>
+                <p className="text-lg font-semibold text-white">{formatUptime(status?.uptime)}</p>
+              </div>
+            </div>
+            {['OWNER', 'ADMIN', 'OPERATOR'].includes(user?.role) && (
+              <button
+                onClick={handleRestart}
+                disabled={restarting}
+                className="w-full danger mt-2 disabled:opacity-50"
+              >
+                {restarting ? 'Restarting...' : 'Restart Server'}
+              </button>
+            )}
           </div>
 
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
+          <div className="panel p-6 space-y-4">
+            <h2 className="text-xl font-bold">Quick Actions</h2>
             <div className="space-y-2">
               <button
                 onClick={() => navigate('/config')}
-                className="w-full primary text-left px-4 py-2"
+                className="w-full primary justify-between"
               >
-                ⚙️ Edit Configuration
+                Edit Configuration
+                <span className="text-sm">⚙️</span>
               </button>
               <button
                 onClick={() => navigate('/mods')}
-                className="w-full secondary text-left px-4 py-2"
+                className="w-full secondary justify-between"
               >
-                📦 Manage Mods
+                Manage Mods
+                <span className="text-sm">📦</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Logs Viewer */}
-        <div className="bg-gray-800 rounded-lg p-6 space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="panel p-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-bold">Recent Logs</h2>
             <button
               onClick={loadLogs}
               disabled={logsLoading}
-              className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm disabled:opacity-50"
+              className="secondary text-sm disabled:opacity-50"
             >
-              {logsLoading ? '🔄 Loading...' : '🔄 Refresh'}
+              {logsLoading ? 'Loading...' : 'Refresh'}
             </button>
           </div>
-          <div className="bg-gray-900 rounded p-4 max-h-96 overflow-y-auto font-mono text-sm text-gray-300">
+          <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 max-h-96 overflow-y-auto font-mono text-sm text-slate-300">
             {logs ? (
               logs.split('\n').map((line, i) => (
                 <div key={i} className="whitespace-pre-wrap break-words">
@@ -158,7 +169,7 @@ export function DashboardPage() {
                 </div>
               ))
             ) : (
-              <p className="text-gray-500">No logs available</p>
+              <p className="text-slate-500">No logs available</p>
             )}
           </div>
         </div>
