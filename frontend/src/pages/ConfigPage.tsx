@@ -137,8 +137,8 @@ export function ConfigPage() {
           <h2 className="h3">General Settings</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Server Name</label>
+            <div className="form-group">
+              <label className="form-label">Server Name</label>
               <input
                 type="text"
                 value={config?.General?.Name || ''}
@@ -148,11 +148,12 @@ export function ConfigPage() {
                     General: { ...config.General, Name: e.target.value },
                   })
                 }
+                className="input"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Port</label>
+            <div className="form-group">
+              <label className="form-label">Port</label>
               <input
                 type="number"
                 value={config?.General?.Port || 3001}
@@ -162,11 +163,12 @@ export function ConfigPage() {
                     General: { ...config.General, Port: parseInt(e.target.value) },
                   })
                 }
+                className="input"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Max Players</label>
+            <div className="form-group">
+              <label className="form-label">Max Players</label>
               <input
                 type="number"
                 value={config?.General?.MaxPlayers || 32}
@@ -176,11 +178,12 @@ export function ConfigPage() {
                     General: { ...config.General, MaxPlayers: parseInt(e.target.value) },
                   })
                 }
+                className="input"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Max Cars</label>
+            <div className="form-group">
+              <label className="form-label">Max Cars</label>
               <input
                 type="number"
                 value={config?.General?.MaxCars || 1}
@@ -190,11 +193,12 @@ export function ConfigPage() {
                     General: { ...config.General, MaxCars: parseInt(e.target.value) },
                   })
                 }
+                className="input"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Map</label>
+            <div className="form-group">
+              <label className="form-label">Map</label>
               <div className="space-y-3">
                 <select
                   value={currentMapValue}
@@ -204,7 +208,7 @@ export function ConfigPage() {
                       General: { ...config.General, Map: e.target.value },
                     })
                   }
-                  className="w-full"
+                  className="input"
                 >
                   <option value="">Select a map</option>
                   {mapOptions.map((option) => (
@@ -224,10 +228,8 @@ export function ConfigPage() {
                   {showMapAdvanced ? 'Hide Advanced Path' : 'Advanced: Edit Map Path'}
                 </button>
                 {showMapAdvanced && (
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">
-                      Map Path
-                    </label>
+                  <div className="form-group">
+                    <label className="form-label">Map Path (Advanced)</label>
                     <input
                       type="text"
                       value={currentMapValue}
@@ -237,7 +239,7 @@ export function ConfigPage() {
                           General: { ...config.General, Map: e.target.value },
                         })
                       }
-                      className="w-full font-mono text-sm"
+                      className="input font-mono text-sm"
                     />
                     <p className="field-hint mt-2">Example: /levels/hirochi_raceway/info.json</p>
                   </div>
@@ -245,8 +247,8 @@ export function ConfigPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Server IP</label>
+            <div className="form-group">
+              <label className="form-label">Server IP</label>
               <input
                 type="text"
                 value={config?.General?.IP || '0.0.0.0'}
@@ -256,12 +258,13 @@ export function ConfigPage() {
                     General: { ...config.General, IP: e.target.value },
                   })
                 }
+                className="input"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Description</label>
+          <div className="form-group">
+            <label className="form-label">Description</label>
             <textarea
               value={config?.General?.Description || ''}
               onChange={(e) =>
@@ -271,6 +274,7 @@ export function ConfigPage() {
                 })
               }
               rows={4}
+              className="input"
             />
           </div>
 
@@ -351,13 +355,13 @@ export function ConfigPage() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="font-medium">BeamMP AuthKey</p>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-var(--text-muted)">
                   {authKeySet ? 'Key is set' : 'Key not set'}
                 </p>
               </div>
               <button
                 onClick={() => setShowAuthKeyModal(true)}
-                className="danger"
+                className="btn btn-danger"
               >
                 Replace AuthKey
               </button>
