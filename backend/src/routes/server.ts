@@ -32,11 +32,11 @@ export async function serverRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/restart',
     { preHandler: csrfProtection },
-    asynif (!requireAuth(request, reply)) {
-          return;
-        } FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        await requireAuth(request, reply);
+        if (!requireAuth(request, reply)) {
+          return;
+        }
 
         const user = await prisma.user.findUnique({
           where: { id: (request.user as any)?.sub },
@@ -64,13 +64,13 @@ export async function serverRoutes(fastify: FastifyInstance) {
       }
     }
   );
-if (!requireAuth(request, reply)) {
-        return;
-      }
+
   // Get server logs
   fastify.get('/logs', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      await requireAuth(request, reply);
+      if (!requireAuth(request, reply)) {
+        return;
+      }
 
       const user = await prisma.user.findUnique({
         where: { id: (request.user as any)?.sub },
