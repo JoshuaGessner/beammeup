@@ -79,10 +79,10 @@ export async function createApp() {
 
   // Rate limiting
   await fastify.register(rateLimit, {
-    max: 100,
+    max: 1000,
     timeWindow: '15 minutes',
     cache: 10000,
-    allowList: ['127.0.0.1'],
+    allowList: ['127.0.0.1', '::1'], // localhost IPv4 and IPv6
     redis: process.env.REDIS_URL,
   });
 
