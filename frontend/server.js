@@ -32,7 +32,7 @@ app.use('/api', createProxyMiddleware({
   changeOrigin: true,
   logLevel: 'debug',
   pathRewrite: {
-    '^/api': '/api', // Keep the /api prefix
+    '^': '/api', // Prepend /api since Express strips it when matching /api prefix
   },
   onProxyReq: (proxyReq, req, res) => {
     console.log(`[proxy-req] Target: ${backendUrl}, Path: ${req.path}, Full URL: ${backendUrl}${req.url}`);
