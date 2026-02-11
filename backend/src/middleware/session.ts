@@ -17,13 +17,22 @@ export async function attachSession(
       include: { user: true },
     });
 
-    if (!session || session.expiresAt < new Date()) {
+    if (!session) {
+      console.log('[session] Session token not found in database');
       reply.clearCookie('session_token');
       return;
     }
 
+    if (session.expiresAt < new Date()) {
+      console.log('[session] Session expired:', { expiresAt: session.expiresAt });
+      reply.clearCookie('session_token');
+      return;
+    }
+
+    console.log('[session] Session attached:', { userId: session.userId, username: session.user?.username, role: session.user?.role });
     request.user = { sub: session.userId };
   } catch (error) {
+    console.error('[session] Error attaching session:', error);
     // Session not found or expired
   }
 }
