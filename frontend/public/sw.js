@@ -39,8 +39,9 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip cross-origin and API requests
+  // Skip cross-origin and API requests - let them go through normally
   if (url.origin !== location.origin || url.pathname.startsWith('/api')) {
+    event.respondWith(fetch(request));
     return;
   }
 
