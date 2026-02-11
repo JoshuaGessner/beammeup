@@ -27,7 +27,6 @@ export async function authRoutes(fastify: FastifyInstance) {
       const { username, password } = payload;
 
       const user = await prisma.user.findUnique({ where: { username } });
-      console.log('[auth] Login attempt:', { username, userFound: !!user, userRole: user?.role, userId: user?.id });
 
       if (!user) {
         return reply.code(401).send({ error: 'Invalid credentials' });
@@ -58,7 +57,6 @@ export async function authRoutes(fastify: FastifyInstance) {
           ipAddress: request.ip,
         },
       });
-      console.log('[auth] Session created:', { userId: session.userId, userRole: user.role, sessionId: session.id });
 
       setSessionCookie(reply, session.token, expiresAt);
 
@@ -117,11 +115,8 @@ export async function authRoutes(fastify: FastifyInstance) {
   fastify.get('/me', async (request: FastifyRequest, reply: FastifyReply) => {
     // Session is already validated by attachSession middleware
     const userId = (request.user as any)?.sub;
-    
-    console.log('[auth /me] Request:', { userId, hasSessionCookie: !!request.cookies.session_token });
 
     if (!userId) {
-      console.log('[auth /me] No userId attached');
       return reply.code(401).send({ error: 'Unauthorized' });
     }
 
@@ -131,10 +126,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         select: { id: true, username: true, role: true, email: true },
       });
 
-      console.log('[auth /me] User fetched:', { userId, username: user?.username, role: user?.role });
-
       if (!user) {
-        console.log('[auth /me] User not found in database');
         return reply.code(401).send({ error: 'Unauthorized' });
       }
 

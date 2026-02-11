@@ -30,7 +30,6 @@ class ApiClient {
 
   constructor() {
     const baseURL = getApiBaseUrl();
-    console.log('[api] Initializing with baseURL:', baseURL);
     
     this.client = axios.create({
       baseURL,

@@ -17,8 +17,14 @@ console.log('[index.ts] Module loading...');
 const ENV = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   FASTIFY_PORT: parseInt(process.env.FASTIFY_PORT || '3000', 10),
-  SESSION_SECRET: process.env.SESSION_SECRET || 'dev-secret-change-in-production',
+  SESSION_SECRET: process.env.SESSION_SECRET || (process.env.NODE_ENV === 'production' ? undefined : 'dev-secret-change-in-production'),
 };
+
+// Validate required environment variables in production
+if (ENV.NODE_ENV === 'production' && !ENV.SESSION_SECRET) {
+  console.error('[ERROR] SESSION_SECRET environment variable is required in production');
+  process.exit(1);
+}
 
 console.log('[index.ts] Initializing Prisma...');
 export const prisma = new PrismaClient();
@@ -26,21 +32,14 @@ console.log('[index.ts] Prisma initialized');
 
 export async function createApp() {
   const fastify = Fastify({
-    logger: ENV.NODE_ENV === 'development',
+    logger: ENV.NODE_ENV === 'development' ? true : false, // Disable request logging in production
     trustProxy: true,
     requestTimeout: 30000, // 30 second timeout
     bodyLimit: 100 * 1024 * 1024, // 100MB max request size
   });
 
-  // Log all incoming requests
-  fastify.addHook('onRequest', async (request, reply) => {
-    console.log(`[backend] Incoming ${request.method} ${request.url}`);
-  });
-
-  // Add response logging
-  fastify.addHook('onResponse', async (request, reply) => {
-    console.log(`[backend] Response ${reply.statusCode} for ${request.method} ${request.url}`);
-  });
+  // Request/response logging disabled in production for security
+  // Re-enable if needed for debugging
 
   // Security headers via Helmet
   await fastify.register(helmet, {
@@ -71,9 +70,14 @@ export async function createApp() {
     xssFilter: true,
   });
 
-  // CORS
+  // CORS - Restrict to known origins in production
+  // When behind Caddy reverse proxy, CORS is typically not needed since same origin
+  const corsOrigin = process.env.NODE_ENV === 'production' 
+    ? (process.env.ALLOWED_ORIGINS?.split(',') || false) // Restrict to env var in prod
+    : true; // Allow all in development
+  
   await fastify.register(cors, {
-    origin: true,
+    origin: corsOrigin,
     credentials: true,
   });
 

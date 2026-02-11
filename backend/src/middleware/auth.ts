@@ -9,7 +9,6 @@ export function requireAuth(
   const userId = (request.user as any)?.sub;
   
   if (!userId) {
-    console.log('[requireAuth] Authentication failed: no userId attached');
     reply.code(401).send({ error: 'Unauthorized' });
     return false;
   }

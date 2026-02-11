@@ -23,22 +23,17 @@ function RouteSelector() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      console.log('[RouteSelector] Checking setup status...');
       import('./lib/api.js').then(({ api }) => {
         api.getSetupStatus()
           .then((status) => {
-            console.log('[RouteSelector] Setup status received:', status);
             setNeedsSetup(status.needsSetup);
           })
           .catch((err) => {
-            console.error('[RouteSelector] Failed to get setup status:', err);
             setNeedsSetup(false);
           });
       });
     }
   }, [isAuthenticated]);
-
-  console.log('[RouteSelector] State - isAuthenticated:', isAuthenticated, 'needsSetup:', needsSetup);
 
   if (needsSetup === null && !isAuthenticated) {
     return (

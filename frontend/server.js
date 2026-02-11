@@ -4,11 +4,12 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
 
-// Log all requests for debugging
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  next();
-});
+// Request logging disabled in production for cleaner logs
+// Uncomment below to debug frontend server
+// app.use((req, res, next) => {
+//   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+//   next();
+// });
 
 // Serve static files with correct MIME types
 app.use(express.static('./dist', {
@@ -25,20 +26,21 @@ app.use(express.static('./dist', {
 // In Docker, backend is on beammeup-backend:3000 (internal network)
 // Locally, backend is on localhost:8200
 const backendUrl = process.env.BACKEND_URL || 'http://beammeup-backend:3000';
-console.log(`[server.js] Backend URL: ${backendUrl}`);
 
 app.use('/api', createProxyMiddleware({
   target: backendUrl,
   changeOrigin: true,
-  logLevel: 'debug',
+  logLevel: 'silent', // Disable proxy middleware debug logging in production
   pathRewrite: {
-    '^': '/api', // Prepend /api since Express strips it when matching /api prefix
+    '^': '/api', // Prepend /api since Express strips it when matching /api path
   },
   onProxyReq: (proxyReq, req, res) => {
-    console.log(`[proxy-req] Target: ${backendUrl}, Path: ${req.path}, Full URL: ${backendUrl}${req.url}`);
+    // Debug logging disabled - uncomment to troubleshoot
+    // console.log(`[proxy-req] ${req.method} ${req.url}`);
   },
   onProxyRes: (proxyRes, req, res) => {
-    console.log(`[proxy-res] ${proxyRes.statusCode} for ${req.method} ${req.url}`);
+    // Debug logging disabled - uncomment to troubleshoot
+    // console.log(`[proxy-res] ${proxyRes.statusCode} for ${req.method} ${req.url}`);
   },
   onError: (err, req, res) => {
     console.error(`[proxy-error] ${err.code}: ${err.message}`);
@@ -48,11 +50,9 @@ app.use('/api', createProxyMiddleware({
 
 // SPA fallback - serve index.html for all non-API routes
 app.use((req, res) => {
-  console.log(`[spa-fallback] Serving index.html for ${req.path}`);
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 app.listen(3000, '0.0.0.0', () => {
-  console.log('[server.js] Frontend server listening on 0.0.0.0:3000');
-  console.log(`[server.js] API proxy configured to: ${backendUrl}`);
+  console.log('[server.js] Frontend server listening on port 3000');
 });

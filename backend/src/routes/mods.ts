@@ -55,8 +55,7 @@ export async function modsRoutes(fastify: FastifyInstance) {
         reply.code(201).send(modData);
       } catch (error: any) {
         console.error('Failed to upload mod:', error);
-        const message = error.message || 'Failed to upload mod';
-        reply.code(400).send({ error: message });
+        reply.code(400).send({ error: 'Failed to upload mod' });
       }
     }
   );
