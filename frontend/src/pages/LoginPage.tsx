@@ -30,8 +30,9 @@ export function LoginPage() {
 
     try {
       await login(username, password);
-      navigate('/dashboard');
       addNotification('Welcome back!', `Signed in as ${username}`, 'success');
+      // Force page reload to ensure session cookie is properly loaded
+      window.location.href = '/dashboard';
     } catch (err: any) {
       addNotification('Login Failed', err.response?.data?.error || 'Invalid credentials', 'error');
     } finally {

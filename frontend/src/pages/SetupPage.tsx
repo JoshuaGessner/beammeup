@@ -49,7 +49,8 @@ export function SetupPage() {
         setAuthData(response.token, response.user);
       }
       addNotification('Success', 'Owner account created!', 'success');
-      navigate('/dashboard');
+      // Force page reload to ensure session cookie is properly loaded
+      window.location.href = '/dashboard';
     } catch (err: any) {
       addNotification('Setup Failed', err.response?.data?.error || 'An error occurred', 'error');
     } finally {
