@@ -9,7 +9,9 @@ export async function serverRoutes(fastify: FastifyInstance) {
   // Get server status
   fastify.get('/status', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      await requireAuth(request, reply);
+      if (!requireAuth(request, reply)) {
+        return;
+      }
 
       const containerName = process.env.BEAMMP_CONTAINER_NAME || 'beammp';
       const status = await getContainerStatus(containerName);
@@ -30,7 +32,9 @@ export async function serverRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/restart',
     { preHandler: csrfProtection },
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    asynif (!requireAuth(request, reply)) {
+          return;
+        } FastifyReply) => {
       try {
         await requireAuth(request, reply);
 
@@ -60,7 +64,9 @@ export async function serverRoutes(fastify: FastifyInstance) {
       }
     }
   );
-
+if (!requireAuth(request, reply)) {
+        return;
+      }
   // Get server logs
   fastify.get('/logs', async (request: FastifyRequest, reply: FastifyReply) => {
     try {

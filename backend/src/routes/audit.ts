@@ -6,7 +6,7 @@ export async function auditRoutes(fastify: FastifyInstance) {
   // Get audit logs (Owner/Admin only)
   fastify.get('/logs', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      await requireAuth(request, reply);
+      if (!requireAuth(request, reply)) { return; }
 
       const user = await prisma.user.findUnique({
         where: { id: (request.user as any)?.sub },
@@ -55,7 +55,7 @@ export async function auditRoutes(fastify: FastifyInstance) {
   // Export audit logs as CSV (Owner/Admin only)
   fastify.get('/export', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      await requireAuth(request, reply);
+      if (!requireAuth(request, reply)) { return; }
 
       const user = await prisma.user.findUnique({
         where: { id: (request.user as any)?.sub },

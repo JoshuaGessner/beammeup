@@ -10,7 +10,7 @@ export async function configRoutes(fastify: FastifyInstance) {
   // Get current config
   fastify.get('/current', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      await requireAuth(request, reply);
+      if (!requireAuth(request, reply)) { return; }
 
       const user = await prisma.user.findUnique({
         where: { id: (request.user as any)?.sub },
@@ -47,7 +47,7 @@ export async function configRoutes(fastify: FastifyInstance) {
   // Check if AuthKey is set
   fastify.get('/authkey-status', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      await requireAuth(request, reply);
+      if (!requireAuth(request, reply)) { return; }
 
       const config = await readConfigFile();
       const authKey = config.General?.AuthKey;
@@ -63,7 +63,7 @@ export async function configRoutes(fastify: FastifyInstance) {
   // Update config (Owner/Admin/Operator)
   fastify.put('/update', { preHandler: csrfProtection }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      await requireAuth(request, reply);
+      if (!requireAuth(request, reply)) { return; }
 
       const user = await prisma.user.findUnique({
         where: { id: (request.user as any)?.sub },
@@ -121,7 +121,7 @@ export async function configRoutes(fastify: FastifyInstance) {
     { preHandler: csrfProtection, rateLimit: { max: 3, timeWindow: '1 hour' } } as any,
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        await requireAuth(request, reply);
+        if (!requireAuth(request, reply)) { return; }
 
         const user = await prisma.user.findUnique({
           where: { id: (request.user as any)?.sub },

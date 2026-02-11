@@ -9,7 +9,7 @@ export async function modsRoutes(fastify: FastifyInstance) {
   // List mods (all authenticated users)
   fastify.get('/list', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      await requireAuth(request, reply);
+      if (!requireAuth(request, reply)) { return; }
 
       const mods = await listMods();
       reply.code(200).send(mods);
@@ -25,7 +25,7 @@ export async function modsRoutes(fastify: FastifyInstance) {
     { preHandler: csrfProtection, rateLimit: { max: 10, timeWindow: '1 hour' } } as any,
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        await requireAuth(request, reply);
+        if (!requireAuth(request, reply)) { return; }
 
         const user = await prisma.user.findUnique({
           where: { id: (request.user as any)?.sub },
@@ -67,7 +67,7 @@ export async function modsRoutes(fastify: FastifyInstance) {
     { preHandler: csrfProtection },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        await requireAuth(request, reply);
+        if (!requireAuth(request, reply)) { return; }
 
         const user = await prisma.user.findUnique({
           where: { id: (request.user as any)?.sub },
