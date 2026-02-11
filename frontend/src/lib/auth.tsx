@@ -20,42 +20,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
-    if (token) {
-      api.setToken(token);
-      api
-        .getCurrentUser()
-        .then(setUser)
-        .catch(() => {
-          localStorage.removeItem('token');
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    // Check if user is logged in via session cookie
+    api
+      .getCurrentUser()
+      .then(setUser)
+      .catch(() => {
+        // No valid session
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const login = async (username: string, password: string) => {
     const response = await api.login(username, password);
-    if (response.token) {
-      localStorage.setItem('token', response.token);
-      api.setToken(response.token);
-    }
+    // Session cookie is automatically set by the server
     setUser(response.user);
     setToken(response.token);
   };
 
   const setAuthData = (token: string, user: any) => {
-    localStorage.setItem('token', token);
-    api.setToken(token);
+    // Session cookie is already set by the server
     setToken(token);
     setUser(user);
   };
 
   const logout = async () => {
     await api.logout();
-    localStorage.removeItem('token');
+    // Session cookie is automatically cleared by the server
     setUser(null);
     setToken(null);
   };

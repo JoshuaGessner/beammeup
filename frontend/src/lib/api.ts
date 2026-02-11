@@ -27,7 +27,6 @@ const getApiBaseUrl = () => {
 
 class ApiClient {
   private client: AxiosInstance;
-  private token: string | null = null;
 
   constructor() {
     const baseURL = getApiBaseUrl();
@@ -41,14 +40,8 @@ class ApiClient {
       },
     });
 
-    // Load token from localStorage
-    this.token = localStorage.getItem('token');
-
-    // Add auth and CSRF headers
+    // Add CSRF headers
     this.client.interceptors.request.use((config) => {
-      if (this.token) {
-        config.headers.Authorization = `Bearer ${this.token}`;
-      }
       // Always read CSRF token from cookie before each request
       const csrfToken = getCookie('csrf_token');
       if (csrfToken) {
@@ -62,26 +55,11 @@ class ApiClient {
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
-          this.clearAuth();
           window.location.href = '/login';
         }
         return Promise.reject(error);
       }
     );
-  }
-
-  setToken(token: string) {
-    this.token = token;
-    localStorage.setItem('token', token);
-  }
-
-  clearAuth() {
-    this.token = null;
-    localStorage.removeItem('token');
-  }
-
-  getToken(): string | null {
-    return this.token;
   }
 
   // Fetch CSRF token (sets cookie that will be read by request interceptor)
@@ -139,9 +117,7 @@ class ApiClient {
       email,
       authKey,
     });
-    if (response.data.token) {
-      this.setToken(response.data.token);
-    }
+    // Session cookie is automatically set by the server
     return response.data;
   }
 

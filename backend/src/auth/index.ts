@@ -7,6 +7,10 @@ export function configureAuth(fastify: FastifyInstance, secret: string) {
     sign: {
       expiresIn: '24h',
     },
+    cookie: {
+      cookieName: 'session_token',
+      signed: false,
+    },
   });
 
   fastify.decorate('authenticate', async function (request, reply) {

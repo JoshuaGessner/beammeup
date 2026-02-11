@@ -3,6 +3,7 @@ import { prisma } from '../index.js';
 import { hashPassword } from '../auth/password.js';
 import { csrfProtection } from '../middleware/csrf.js';
 import { readConfigFile, writeConfigFile } from '../services/config.js';
+import { setSessionCookie } from '../middleware/session.js';
 
 export async function setupRoutes(fastify: FastifyInstance) {
   // Check if setup is needed
@@ -88,6 +89,19 @@ export async function setupRoutes(fastify: FastifyInstance) {
       });
 
       const token = fastify.jwt.sign({ sub: user.id });
+
+      // Create session
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      await prisma.session.create({
+        data: {
+          userId: user.id,
+          token,
+          expiresAt,
+          ipAddress: request.ip,
+        },
+      });
+
+      setSessionCookie(reply, token, expiresAt);
 
       reply.code(201).send({
         token,
