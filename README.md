@@ -28,17 +28,7 @@ A secure, web-based admin panel for managing your BeamMP game server. Fully Dock
    cd beammeup
    ```
 
-2. **Configure your BeamMP AuthKey:**
-   
-   Edit `beammp-config/ServerConfig.toml` and add your AuthKey:
-   ```toml
-   [General]
-   AuthKey = "your-beammp-auth-key-here"
-   ```
-   
-   Get your AuthKey from: https://beammp.com/keymaster
-
-3. **Start the services:**
+2. **Start the services:**
    ```bash
    docker compose up -d --build
    ```
@@ -48,13 +38,17 @@ A secure, web-based admin panel for managing your BeamMP game server. Fully Dock
    - Admin panel backend (port 8200)
    - Admin panel frontend (port 8201)
 
-4. **Access the admin panel:**
+3. **Complete first-time setup:**
    
    Open your browser to: http://localhost:8201
    
-   On first run, you'll be prompted to create an admin account.
+   You'll see the setup wizard which will ask you to:
+   - Create your admin account (username & password)
+   - Enter your BeamMP AuthKey (get one at https://beammp.com/keymaster)
+   
+   After submitting, the panel will configure your server automatically.
 
-5. **Done!** Your BeamMP server is now running with a web admin panel.
+4. **Done!** Your BeamMP server is now running with a web admin panel.
 
 ## Configuration
 
@@ -135,7 +129,11 @@ docker compose down
 docker compose up -d --build
 ```
 
-Your data (users, configs, mods) is preserved in the `./data` directory.
+Your data is preserved in the `./data` directory including:
+- User accounts and permissions
+- Server configuration (including AuthKey)
+- Uploaded mods
+- Audit logs
 
 ## Maintenance
 
@@ -181,7 +179,7 @@ docker compose restart beammp
 - Ensure ports 8200 and 8201 aren't in use
 
 ### BeamMP server won't start
-- Verify your AuthKey in `beammp-config/ServerConfig.toml`
+- Verify your AuthKey is set (via Config page in admin panel)
 - Check BeamMP logs: `docker compose logs -f beammp`
 - Ensure port 30814 is open (UDP)
 
