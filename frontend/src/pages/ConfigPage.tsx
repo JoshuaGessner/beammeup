@@ -32,6 +32,9 @@ const formatMapLabel = (value: string) => {
 };
 
 export function ConfigPage() {
+  // Component version identifier for debugging
+  console.log('[ConfigPage] Component mounted/rendered - v2026.02.12.01');
+  
   const { user } = useAuth();
   const navigate = useNavigate();
   const { addNotification } = useNotifications();
@@ -83,7 +86,14 @@ export function ConfigPage() {
   }, []);
 
   useEffect(() => {
+    console.log('[ConfigPage] Map scan useEffect triggered', { 
+      hasUser: !!user, 
+      userRole: user?.role,
+      willCheckMaps: user && ['OWNER', 'ADMIN'].includes(user.role)
+    });
+    
     if (!user || !['OWNER', 'ADMIN'].includes(user.role)) {
+      console.log('[ConfigPage] Skipping map check - no user or insufficient role');
       return;
     }
 
