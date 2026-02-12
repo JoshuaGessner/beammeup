@@ -270,6 +270,16 @@ export function ConfigPage() {
                 </select>
                 <p className="field-hint">
                   {currentMapValue ? `Current: ${currentMapLabel}` : 'Select a map to apply it.'}
+                  {mapScanInfo?.timedOut && (
+                    <span className="block text-amber-300 mt-1">
+                      Map scan timed out; some mod maps may be missing.
+                    </span>
+                  )}
+                  {!!mapScanInfo?.skippedLarge && (
+                    <span className="block text-amber-300 mt-1">
+                      Skipped {mapScanInfo.skippedLarge} large mod file(s) during scan.
+                    </span>
+                  )}
                 </p>
                 <button
                   type="button"
