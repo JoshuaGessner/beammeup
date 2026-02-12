@@ -166,6 +166,12 @@ export function ConfigPage() {
 
   const selectedModMap = modMaps.find((map) => map.value === currentMapValue) || null;
   const selectedModLabel = selectedModMap?.label || (selectedModMap ? formatMapLabel(selectedModMap.value) : '');
+  
+  const serverModMap = modMaps.find((map) => map.value === serverMapValue) || null;
+  const serverMapDisplayName = serverModMap?.label 
+    ? serverModMap.label 
+    : formatMapLabel(serverMapValue);
+  
   const canSaveMapLabel =
     !!selectedModMap &&
     mapLabelInput.trim().length > 0 &&
@@ -325,7 +331,7 @@ export function ConfigPage() {
                   ))}
                 </select>
                 <p className="field-hint">
-                  {serverMapValue ? `Current: ${formatMapLabel(serverMapValue)}` : 'No map configured yet'}
+                  {serverMapValue ? `Current: ${serverMapDisplayName}` : 'No map configured yet'}
                   {loadingMaps && (
                     <span className="block text-blue-300 mt-1">
                       🔄 Scanning mods for maps...
