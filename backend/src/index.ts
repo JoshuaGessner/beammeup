@@ -73,7 +73,7 @@ export async function createApp() {
     logger: ENV.NODE_ENV === 'development' ? true : false, // Disable request logging in production
     trustProxy: true,
     requestTimeout: 30000, // 30 second timeout
-    bodyLimit: 100 * 1024 * 1024, // 100MB max request size
+    bodyLimit: 2048 * 1024 * 1024, // 2GB max request size
   });
 
   // Request/response logging disabled in production for security

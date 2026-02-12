@@ -1,9 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth.js';
 import { useNotifications } from '../lib/notifications';
 import { api } from '../lib/api.js';
 import { Layout } from '../components/Layout.js';
+
+type FileStatus = 'pending' | 'uploading' | 'success' | 'error';
+
+interface FileWithStatus {
+  file: File;
+  status: FileStatus;
+  error?: string;
+  id: string;
+}
 
 export function ModsPage() {
   const { user } = useAuth();
@@ -12,10 +21,12 @@ export function ModsPage() {
   const [mods, setMods] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [uploadTotal, setUploadTotal] = useState(0);
+  const [filesWithStatus, setFilesWithStatus] = useState<FileWithStatus[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const MAX_FILE_SIZE_MB = 2048; // Must match backend MAX_MOD_SIZE
 
   useEffect(() => {
     if (!user) {
@@ -38,48 +49,147 @@ export function ModsPage() {
     }
   };
 
-  const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setSelectedFiles(files);
-    setUploadProgress(0);
-    setUploadTotal(files.length);
+  const validateAndAddFiles = (files: File[]) => {
+    const newFiles: FileWithStatus[] = [];
+    for (const file of files) {
+      // Validate file type
+      if (!file.name.toLowerCase().endsWith('.zip')) {
+        addNotification('Error', `${file.name} is not a ZIP file`, 'error');
+        continue;
+      }
+
+      // Validate file size
+      const fileSizeMB = file.size / 1024 / 1024;
+      if (fileSizeMB > MAX_FILE_SIZE_MB) {
+        addNotification('Error', `${file.name} exceeds ${MAX_FILE_SIZE_MB}MB limit (${fileSizeMB.toFixed(2)}MB)`, 'error');
+        continue;
+      }
+
+      // Check for duplicate
+      const isDuplicate = filesWithStatus.some(f => f.file.name === file.name && f.file.size === file.size);
+      if (isDuplicate) {
+        continue;
+      }
+
+      newFiles.push({
+        file,
+        status: 'pending',
+        id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
+      });
+    }
+
+    if (newFiles.length > 0) {
+      setFilesWithStatus(prev => [...prev, ...newFiles]);
+    }
   };
 
-  const handleUploadSelected = async () => {
-    if (selectedFiles.length === 0) return;
+  const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    validateAndAddFiles(files);
+    // Clear input so same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
-    setUploadProgress(0);
-    setUploadTotal(selectedFiles.length);
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    validateAndAddFiles(files);
+  };
+
+  const handleUploadAll = async () => {
+    const pendingFiles = filesWithStatus.filter(f => f.status === 'pending' || f.status === 'error');
+    if (pendingFiles.length === 0) return;
+
     setUploading(true);
-
     let successCount = 0;
 
-    for (const file of selectedFiles) {
+    for (const fileWithStatus of pendingFiles) {
+      // Update status to uploading
+      setFilesWithStatus(prev =>
+        prev.map(f =>
+          f.id === fileWithStatus.id
+            ? { ...f, status: 'uploading' as FileStatus, error: undefined }
+            : f
+        )
+      );
+
       try {
-        await api.uploadMod(file);
+        await api.uploadMod(fileWithStatus.file);
         successCount += 1;
+        
+        // Update status to success
+        setFilesWithStatus(prev =>
+          prev.map(f =>
+            f.id === fileWithStatus.id
+              ? { ...f, status: 'success' as FileStatus }
+              : f
+          )
+        );
       } catch (err: any) {
-        addNotification('Error', err.response?.data?.error || `Upload failed: ${file.name}`, 'error');
-      } finally {
-        setUploadProgress((prev) => prev + 1);
+        const errorMsg = err.response?.data?.error || 'Upload failed';
+        
+        // Update status to error
+        setFilesWithStatus(prev =>
+          prev.map(f =>
+            f.id === fileWithStatus.id
+              ? { ...f, status: 'error' as FileStatus, error: errorMsg }
+              : f
+          )
+        );
       }
     }
 
+    setUploading(false);
+
     if (successCount > 0) {
-      addNotification('Success', `Uploaded ${successCount} mod(s)`, 'success');
+      addNotification('Success', `Uploaded ${successCount} mod(s) successfully`, 'success');
+      // Reload mods list
+      await loadMods();
+      
+      // Remove only successful files after a delay
+      setTimeout(() => {
+        setFilesWithStatus(prev => prev.filter(f => f.status !== 'success'));
+      }, 2000);
     }
 
-    setSelectedFiles([]);
-    setUploading(false);
-    setTimeout(() => {
-      setUploadProgress(0);
-      setUploadTotal(0);
-      loadMods();
-    }, 500);
+    const failCount = pendingFiles.length - successCount;
+    if (failCount > 0) {
+      addNotification('Warning', `${failCount} mod(s) failed to upload`, 'warning');
+    }
   };
 
-  const removeSelectedFile = (index: number) => {
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  const removeFile = (id: string) => {
+    setFilesWithStatus(prev => prev.filter(f => f.id !== id));
+  };
+
+  const clearAllFiles = () => {
+    setFilesWithStatus([]);
+  };
+
+  const clearSuccessful = () => {
+    setFilesWithStatus(prev => prev.filter(f => f.status !== 'success'));
   };
 
   const handleDelete = async (id: string) => {
@@ -95,6 +205,9 @@ export function ModsPage() {
 
   const formatSize = (bytes: number) => {
     const mb = bytes / 1024 / 1024;
+    if (mb >= 1024) {
+      return (mb / 1024).toFixed(2) + ' GB';
+    }
     return mb.toFixed(2) + ' MB';
   };
 
@@ -105,6 +218,36 @@ export function ModsPage() {
   const formatSha256 = (hash: string) => {
     return hash.substring(0, 8) + '...';
   };
+
+  const getStatusIcon = (status: FileStatus) => {
+    switch (status) {
+      case 'pending':
+        return '⏳';
+      case 'uploading':
+        return '⬆️';
+      case 'success':
+        return '✅';
+      case 'error':
+        return '❌';
+    }
+  };
+
+  const getStatusColor = (status: FileStatus) => {
+    switch (status) {
+      case 'pending':
+        return 'text-gray-400';
+      case 'uploading':
+        return 'text-blue-400';
+      case 'success':
+        return 'text-green-400';
+      case 'error':
+        return 'text-red-400';
+    }
+  };
+
+  const pendingCount = filesWithStatus.filter(f => f.status === 'pending' || f.status === 'error').length;
+  const uploadingCount = filesWithStatus.filter(f => f.status === 'uploading').length;
+  const successCount = filesWithStatus.filter(f => f.status === 'success').length;
 
   return (
     <Layout>
@@ -117,67 +260,132 @@ export function ModsPage() {
         {['OWNER', 'ADMIN'].includes(user?.role) && (
           <div className="card-lg space-y-4">
             <h2 className="h3">Upload Mods</h2>
-            <div className="space-y-3">
+            
+            {/* Drag and Drop Zone */}
+            <div
+              className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-all ${
+                dragActive
+                  ? 'border-orange-500 bg-orange-500/10'
+                  : 'border-subtle hover:border-orange-500/50'
+              } ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+            >
               <input
+                ref={fileInputRef}
                 type="file"
                 accept=".zip"
                 multiple
                 onChange={handleFileSelection}
                 disabled={uploading}
-                className="block w-full"
+                className="hidden"
+                id="mod-file-input"
               />
-              {selectedFiles.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm text-muted">
-                    <span>{selectedFiles.length} file(s) selected</span>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedFiles([])}
-                      className="text-orange-300 hover:text-orange-200"
-                      disabled={uploading}
-                    >
-                      Clear
-                    </button>
+              <label
+                htmlFor="mod-file-input"
+                className="cursor-pointer flex flex-col items-center space-y-2"
+              >
+                <div className="text-4xl">📦</div>
+                <div className="text-lg font-medium text-white">
+                  Drop mod files here or click to browse
+                </div>
+                <div className="text-sm text-muted">
+                  ZIP files only • Max {MAX_FILE_SIZE_MB}MB per file
+                </div>
+              </label>
+            </div>
+
+            {/* File List with Status */}
+            {filesWithStatus.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-muted">
+                    {filesWithStatus.length} file(s) • 
+                    {pendingCount > 0 && <span className="ml-1">{pendingCount} pending</span>}
+                    {uploadingCount > 0 && <span className="ml-1 text-blue-400">{uploadingCount} uploading</span>}
+                    {successCount > 0 && <span className="ml-1 text-green-400">{successCount} uploaded</span>}
                   </div>
-                  <div className="max-h-32 overflow-y-auto border border-subtle rounded-lg p-2 text-sm">
-                    {selectedFiles.map((file, index) => (
-                      <div key={`${file.name}-${index}`} className="flex items-center justify-between py-1">
-                        <span className="text-secondary">{file.name}</span>
+                  <div className="flex gap-2">
+                    {successCount > 0 && !uploading && (
+                      <button
+                        type="button"
+                        onClick={clearSuccessful}
+                        className="text-xs text-green-300 hover:text-green-200"
+                      >
+                        Clear Successful
+                      </button>
+                    )}
+                    {!uploading && (
+                      <button
+                        type="button"
+                        onClick={clearAllFiles}
+                        className="text-xs text-orange-300 hover:text-orange-200"
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="max-h-64 overflow-y-auto border border-subtle rounded-lg divide-y divide-subtle">
+                  {filesWithStatus.map((fileWithStatus) => (
+                    <div
+                      key={fileWithStatus.id}
+                      className="flex items-start justify-between p-3 hover:bg-hover transition-colors"
+                    >
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <span className="text-xl flex-shrink-0 mt-0.5">
+                          {getStatusIcon(fileWithStatus.status)}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-white truncate">
+                            {fileWithStatus.file.name}
+                          </div>
+                          <div className="text-xs text-muted">
+                            {formatSize(fileWithStatus.file.size)}
+                          </div>
+                          {fileWithStatus.error && (
+                            <div className="text-xs text-red-400 mt-1">
+                              {fileWithStatus.error}
+                            </div>
+                          )}
+                        </div>
+                        <div className={`text-xs ${getStatusColor(fileWithStatus.status)} flex-shrink-0`}>
+                          {fileWithStatus.status === 'pending' && 'Pending'}
+                          {fileWithStatus.status === 'uploading' && 'Uploading...'}
+                          {fileWithStatus.status === 'success' && 'Success'}
+                          {fileWithStatus.status === 'error' && 'Failed'}
+                        </div>
+                      </div>
+                      {(fileWithStatus.status === 'pending' || fileWithStatus.status === 'error') && !uploading && (
                         <button
                           type="button"
-                          onClick={() => removeSelectedFile(index)}
-                          className="text-xs text-red-300 hover:text-red-200"
-                          disabled={uploading}
+                          onClick={() => removeFile(fileWithStatus.id)}
+                          className="text-xs text-red-300 hover:text-red-200 ml-3 flex-shrink-0"
                         >
                           Remove
                         </button>
-                      </div>
-                    ))}
-                  </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {pendingCount > 0 && (
                   <button
                     type="button"
-                    onClick={handleUploadSelected}
-                    className="btn btn-primary"
-                    disabled={uploading || selectedFiles.length === 0}
+                    onClick={handleUploadAll}
+                    className="btn btn-primary w-full"
+                    disabled={uploading}
                   >
-                    {uploading ? 'Installing Mods...' : 'Install Selected Mods'}
+                    {uploading
+                      ? `Uploading... (${uploadingCount}/${pendingCount})`
+                      : `Upload ${pendingCount} Mod${pendingCount > 1 ? 's' : ''}`}
                   </button>
-                </div>
-              )}
-              {uploadTotal > 0 && (
-                <div className="bg-hover rounded-full h-2 overflow-hidden">
-                  <div
-                    className="bg-orange-500 h-full transition-all"
-                    style={{ width: `${Math.round((uploadProgress / uploadTotal) * 100)}%` }}
-                  />
-                </div>
-              )}
-              {uploading && uploadTotal > 0 && (
-                <p className="text-sm text-muted">
-                  Uploading {uploadProgress} of {uploadTotal}...
-                </p>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
