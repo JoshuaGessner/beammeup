@@ -93,9 +93,9 @@ export function ConfigPage() {
         const cached = localStorage.getItem('beammeup_mod_maps_cache');
         const cachedData = cached ? JSON.parse(cached) : null;
         
-        setLoadingMaps(true);
-        const result = await api.getAvailableMaps();
-        const serverStartedAt = (result as any)?.serverStartedAt;
+        // Get server start time from lightweight status endpoint (not map scan)
+        const serverStatus = await api.getServerStatus();
+        const serverStartedAt = serverStatus?.startedAt;
         
         // Only rescan if server has restarted since last scan
         const needsRescan = !cachedData || 
@@ -105,6 +105,10 @@ export function ConfigPage() {
         
         if (needsRescan) {
           console.log('[ConfigPage] Server restarted or no cache - rescanning maps');
+          setLoadingMaps(true);
+          
+          // Now trigger the expensive map scan
+          const result = await api.getAvailableMaps();
           const maps = Array.isArray(result?.maps) ? result.maps : [];
           setModMaps(maps);
           
@@ -125,13 +129,15 @@ export function ConfigPage() {
               skippedLarge: Number(result?.skippedLarge || 0),
             });
           }
+          
+          setLoadingMaps(false);
         } else {
           console.log('[ConfigPage] Using cached maps - server not restarted');
+          // Cache is valid, no loading state needed
         }
       } catch (error) {
         console.error('[ConfigPage] Failed to check map scan status:', error);
         addNotification('Warning', 'Map list could not be refreshed from mods', 'warning');
-      } finally {
         setLoadingMaps(false);
       }
     };

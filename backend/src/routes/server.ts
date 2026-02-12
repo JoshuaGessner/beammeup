@@ -21,6 +21,7 @@ export async function serverRoutes(fastify: FastifyInstance) {
         running: status.running,
         state: status.state,
         uptime: uptime || 0,
+        startedAt: status.startedAt,
       });
     } catch (error) {
       console.error('Failed to get server status:', error);
