@@ -45,13 +45,17 @@ export function ConfigPage() {
   const [modMaps, setModMaps] = useState<Array<{ value: string; label: string | null }>>(() => {
     // Load cached maps from localStorage on mount
     try {
-      const cached = localStorage.getItem('beammeup_mod_maps');
-      return cached ? JSON.parse(cached) : [];
+      const cached = localStorage.getItem('beammeup_mod_maps_cache');
+      if (cached) {
+        const { maps } = JSON.parse(cached);
+        return maps || [];
+      }
     } catch {
-      return [];
+      // Ignore cache errors
     }
+    return [];
   });
-  const [loadingMaps, setLoadingMaps] = useState(true);
+  const [loadingMaps, setLoadingMaps] = useState(false);
   const [mapScanInfo, setMapScanInfo] = useState<{ timedOut: boolean; skippedLarge: number } | null>(null);
   const [mapLabelInput, setMapLabelInput] = useState('');
   const [savingMapLabel, setSavingMapLabel] = useState(false);
@@ -80,35 +84,59 @@ export function ConfigPage() {
 
   useEffect(() => {
     if (!user || !['OWNER', 'ADMIN'].includes(user.role)) {
-      setLoadingMaps(false);
       return;
     }
 
-    setLoadingMaps(true);
-    api
-      .getAvailableMaps()
-      .then((result) => {
-        const maps = Array.isArray(result?.maps) ? result.maps : [];
-        setModMaps(maps);
-        // Cache maps in localStorage for instant load on next visit
-        try {
-          localStorage.setItem('beammeup_mod_maps', JSON.stringify(maps));
-        } catch (error) {
-          console.warn('[ConfigPage] Failed to cache mod maps:', error);
+    // Check if we need to rescan by comparing server start time
+    const checkAndScanMaps = async () => {
+      try {
+        const cached = localStorage.getItem('beammeup_mod_maps_cache');
+        const cachedData = cached ? JSON.parse(cached) : null;
+        
+        setLoadingMaps(true);
+        const result = await api.getAvailableMaps();
+        const serverStartedAt = (result as any)?.serverStartedAt;
+        
+        // Only rescan if server has restarted since last scan
+        const needsRescan = !cachedData || 
+          !cachedData.serverStartedAt || 
+          !serverStartedAt ||
+          new Date(serverStartedAt) > new Date(cachedData.serverStartedAt);
+        
+        if (needsRescan) {
+          console.log('[ConfigPage] Server restarted or no cache - rescanning maps');
+          const maps = Array.isArray(result?.maps) ? result.maps : [];
+          setModMaps(maps);
+          
+          // Cache maps with server start time
+          try {
+            localStorage.setItem('beammeup_mod_maps_cache', JSON.stringify({
+              maps,
+              serverStartedAt,
+              cachedAt: new Date().toISOString(),
+            }));
+          } catch (error) {
+            console.warn('[ConfigPage] Failed to cache mod maps:', error);
+          }
+          
+          if (result?.timedOut || result?.skippedLarge > 0) {
+            setMapScanInfo({
+              timedOut: !!result?.timedOut,
+              skippedLarge: Number(result?.skippedLarge || 0),
+            });
+          }
+        } else {
+          console.log('[ConfigPage] Using cached maps - server not restarted');
         }
-        if (result?.timedOut || result?.skippedLarge > 0) {
-          setMapScanInfo({
-            timedOut: !!result?.timedOut,
-            skippedLarge: Number(result?.skippedLarge || 0),
-          });
-        }
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error('[ConfigPage] Failed to check map scan status:', error);
         addNotification('Warning', 'Map list could not be refreshed from mods', 'warning');
-      })
-      .finally(() => {
+      } finally {
         setLoadingMaps(false);
-      });
+      }
+    };
+    
+    checkAndScanMaps();
   }, [user, addNotification]);
 
   // Detect changes
@@ -212,12 +240,19 @@ export function ConfigPage() {
         map.value === updated.mapPath ? { ...map, label: updated.label } : map
       );
       setModMaps(updatedMaps);
-      // Update localStorage cache
+      
+      // Update localStorage cache with new label
       try {
-        localStorage.setItem('beammeup_mod_maps', JSON.stringify(updatedMaps));
+        const cached = localStorage.getItem('beammeup_mod_maps_cache');
+        if (cached) {
+          const cachedData = JSON.parse(cached);
+          cachedData.maps = updatedMaps;
+          localStorage.setItem('beammeup_mod_maps_cache', JSON.stringify(cachedData));
+        }
       } catch (error) {
         console.warn('[ConfigPage] Failed to update cached mod maps:', error);
       }
+      
       addNotification('Success', 'Map label updated', 'success');
     } catch (err: any) {
       addNotification('Error', err.response?.data?.error || 'Failed to update map label', 'error');

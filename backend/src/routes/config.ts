@@ -75,7 +75,15 @@ export async function configRoutes(fastify: FastifyInstance) {
       }
 
       const result = await listModMaps();
-      reply.code(200).send(result);
+      
+      // Get server start time to track when maps might have changed
+      const containerName = process.env.BEAMMP_CONTAINER_NAME || 'beammp';
+      const { startedAt } = await import('../services/docker.js').then(m => m.getContainerStatus(containerName));
+      
+      reply.code(200).send({
+        ...result,
+        serverStartedAt: startedAt || new Date().toISOString(),
+      });
     } catch (error) {
       reply.code(500).send({ error: 'Failed to list maps' });
     }
