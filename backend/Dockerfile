@@ -3,9 +3,14 @@ FROM node:22-bullseye-slim AS builder
 
 WORKDIR /app
 
-# Install OpenSSL 1.1 (required by Prisma v5 native engine)
+# Install OpenSSL 1.1 (required by Prisma v5 native engine) and build tools for node-gyp
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libssl1.1 ca-certificates \
+    && apt-get install -y --no-install-recommends \
+       libssl1.1 \
+       ca-certificates \
+       python3 \
+       make \
+       g++ \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
