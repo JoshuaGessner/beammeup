@@ -54,7 +54,8 @@ A secure, web-based admin panel for managing your BeamMP game server. Fully Dock
 
 ### Optional: Environment Variables
 
-Create a `.env` file to customize settings (copy from `.env.example`):
+Environment variables are optional and only needed if you want to override defaults.
+If you do, create a `.env` file (copy from `.env.example`).
 
 ```bash
 # Set production mode
@@ -66,8 +67,6 @@ ALLOWED_ORIGINS=https://yourdomain.com
 # Limit mod file upload size (in MB)
 MAX_MOD_SIZE=1024
 ```
-
-**Note:** SESSION_SECRET is auto-generated and stored securely if not provided.
 
 ### Ports
 
@@ -95,7 +94,7 @@ For HTTPS access with a domain name, use Caddy as a reverse proxy:
 
 3. **Start Caddy:**
    ```bash
-   caddy run
+   caddy start
    ```
 
 Now access your admin panel at: https://yourdomain.com
