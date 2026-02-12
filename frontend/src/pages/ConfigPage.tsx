@@ -42,9 +42,10 @@ export function ConfigPage() {
   const [isDirty, setIsDirty] = useState(false);
   const [authKeyStatus, setAuthKeyStatus] = useState<{ isSet: boolean; isDefault: boolean } | null>(null);
   const [showAuthKeyModal, setShowAuthKeyModal] = useState(false);
-  const [showMapAdvanced, setShowMapAdvanced] = useState(false);
-  const [dynamicMaps, setDynamicMaps] = useState<string[]>([]);
+  const [modMaps, setModMaps] = useState<Array<{ value: string; label: string | null }>>([]);
   const [mapScanInfo, setMapScanInfo] = useState<{ timedOut: boolean; skippedLarge: number } | null>(null);
+  const [mapLabelInput, setMapLabelInput] = useState('');
+  const [savingMapLabel, setSavingMapLabel] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -77,7 +78,7 @@ export function ConfigPage() {
       .getAvailableMaps()
       .then((result) => {
         const maps = Array.isArray(result?.maps) ? result.maps : [];
-        setDynamicMaps(maps);
+        setModMaps(maps);
         if (result?.timedOut || result?.skippedLarge > 0) {
           setMapScanInfo({
             timedOut: !!result?.timedOut,
@@ -122,6 +123,67 @@ export function ConfigPage() {
     setAuthKeyStatus({ isSet: true, isDefault: false });
   };
 
+  const currentMapValue = config?.General?.Map || '';
+  const currentMapLabel = currentMapValue ? formatMapLabel(currentMapValue) : 'Select a map';
+  const dynamicMapOptions = modMaps.map((map) => ({
+    label: `${map.label || formatMapLabel(map.value)} (Mod)`,
+    value: map.value,
+    source: 'mod' as const,
+  }));
+
+  const mergedOptions = [...mapPresets, ...dynamicMapOptions].reduce(
+    (acc: Array<{ label: string; value: string; source?: 'mod' }>, option) => {
+      if (!acc.some((item) => item.value === option.value)) {
+        acc.push(option);
+      }
+      return acc;
+    },
+    []
+  );
+
+  const optionValues = mergedOptions.map((preset) => preset.value);
+  const isMissingMap = currentMapValue && !optionValues.includes(currentMapValue);
+  const mapOptions = isMissingMap
+    ? [{ label: `Missing map (mod removed or corrupt): ${currentMapValue}`, value: currentMapValue }, ...mergedOptions]
+    : mergedOptions;
+
+  const selectedModMap = modMaps.find((map) => map.value === currentMapValue) || null;
+  const selectedModLabel = selectedModMap?.label || (selectedModMap ? formatMapLabel(selectedModMap.value) : '');
+  const canSaveMapLabel =
+    !!selectedModMap &&
+    mapLabelInput.trim().length > 0 &&
+    mapLabelInput.trim() !== selectedModLabel;
+
+  useEffect(() => {
+    if (selectedModMap) {
+      setMapLabelInput(selectedModLabel);
+    } else {
+      setMapLabelInput('');
+    }
+  }, [selectedModMap, selectedModLabel]);
+
+  const handleSaveMapLabel = async () => {
+    if (!selectedModMap) return;
+    const nextLabel = mapLabelInput.trim();
+    if (!nextLabel) {
+      addNotification('Error', 'Map label cannot be empty', 'error');
+      return;
+    }
+
+    setSavingMapLabel(true);
+    try {
+      const updated = await api.updateMapLabel(selectedModMap.value, nextLabel);
+      setModMaps((prev) =>
+        prev.map((map) => (map.value === updated.mapPath ? { ...map, label: updated.label } : map))
+      );
+      addNotification('Success', 'Map label updated', 'success');
+    } catch (err: any) {
+      addNotification('Error', err.response?.data?.error || 'Failed to update map label', 'error');
+    } finally {
+      setSavingMapLabel(false);
+    }
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -134,29 +196,6 @@ export function ConfigPage() {
       </Layout>
     );
   }
-
-  const currentMapValue = config?.General?.Map || '';
-  const currentMapLabel = currentMapValue ? formatMapLabel(currentMapValue) : 'Select a map';
-  const dynamicMapOptions = dynamicMaps.map((value) => ({
-    label: formatMapLabel(value),
-    value,
-  }));
-
-  const mergedOptions = [...mapPresets, ...dynamicMapOptions].reduce(
-    (acc: Array<{ label: string; value: string }>, option) => {
-      if (!acc.some((item) => item.value === option.value)) {
-        acc.push(option);
-      }
-      return acc;
-    },
-    []
-  );
-
-  const optionValues = mergedOptions.map((preset) => preset.value);
-  const showCurrentMap = currentMapValue && !optionValues.includes(currentMapValue);
-  const mapOptions = showCurrentMap
-    ? [{ label: `${currentMapLabel} (Current)`, value: currentMapValue }, ...mergedOptions]
-    : mergedOptions;
 
   return (
     <Layout>
@@ -281,29 +320,29 @@ export function ConfigPage() {
                     </span>
                   )}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setShowMapAdvanced((prev) => !prev)}
-                  className="btn-ghost text-sm px-0"
-                >
-                  {showMapAdvanced ? 'Hide Advanced Path' : 'Advanced: Edit Map Path'}
-                </button>
-                {showMapAdvanced && (
+                {selectedModMap && ['OWNER', 'ADMIN'].includes(user?.role) && (
                   <div className="form-group">
-                    <label className="form-label">Map Path (Advanced)</label>
-                    <input
-                      type="text"
-                      value={currentMapValue}
-                      onChange={(e) =>
-                        setConfig({
-                          ...config,
-                          General: { ...config.General, Map: e.target.value },
-                        })
-                      }
-                      className="input font-mono text-sm"
-                    />
-                    <p className="field-hint mt-2">Example: /levels/hirochi_raceway/info.json</p>
-                    <p className="field-hint">Maps from installed mods are detected automatically.</p>
+                    <div className="flex items-center justify-between">
+                      <label className="form-label">Custom Mod Map Name</label>
+                      <span className="badge badge-warning">Mod</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={mapLabelInput}
+                        onChange={(e) => setMapLabelInput(e.target.value)}
+                        className="input"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveMapLabel}
+                        className="btn btn-secondary"
+                        disabled={savingMapLabel || !canSaveMapLabel}
+                      >
+                        {savingMapLabel ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                    <p className="field-hint mt-2">Rename mod maps for a cleaner dropdown label.</p>
                   </div>
                 )}
               </div>

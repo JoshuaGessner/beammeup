@@ -5,7 +5,7 @@ import { logAuditAction } from '../middleware/audit-logger.js';
 import { csrfProtection } from '../middleware/csrf.js';
 import { verifyPassword } from '../auth/password.js';
 import { readConfigFile, writeConfigFile, backupConfigFile, validateConfig } from '../services/config.js';
-import { listModMaps } from '../services/mods.js';
+import { listModMaps, upsertMapLabel } from '../services/mods.js';
 
 export async function configRoutes(fastify: FastifyInstance) {
   // Get current config
@@ -78,6 +78,41 @@ export async function configRoutes(fastify: FastifyInstance) {
       reply.code(200).send(result);
     } catch (error) {
       reply.code(500).send({ error: 'Failed to list maps' });
+    }
+  });
+
+  // Update map label (Owner/Admin only)
+  fastify.put('/maps/label', { preHandler: csrfProtection }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      if (!requireAuth(request, reply)) { return; }
+
+      const user = await prisma.user.findUnique({
+        where: { id: (request.user as any)?.sub },
+      });
+
+      if (!user || !['OWNER', 'ADMIN'].includes(user.role)) {
+        return reply.code(403).send({ error: 'Insufficient permissions' });
+      }
+
+      const { mapPath, label } = request.body as { mapPath?: string; label?: string };
+      if (!mapPath || !label) {
+        return reply.code(400).send({ error: 'mapPath and label are required' });
+      }
+
+      const updated = await upsertMapLabel(mapPath, label);
+
+      await logAuditAction(
+        user.id,
+        'MAP_LABEL_UPDATE',
+        'config',
+        mapPath,
+        { label: updated.label },
+        request.ip
+      );
+
+      reply.code(200).send(updated);
+    } catch (error: any) {
+      reply.code(400).send({ error: error.message || 'Failed to update map label' });
     }
   });
 

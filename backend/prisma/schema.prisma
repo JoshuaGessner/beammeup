@@ -61,6 +61,16 @@ model ModFile {
   @@map("mod_files")
 }
 
+model MapLabel {
+  id        String   @id @default(cuid())
+  mapPath   String   @unique
+  label     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("map_labels")
+}
+
 model AuditLog {
   id        String    @id @default(cuid())
   userId    String

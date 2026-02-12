@@ -142,6 +142,11 @@ class ApiClient {
     return response.data;
   }
 
+  async updateMapLabel(mapPath: string, label: string) {
+    const response = await this.client.put('/config/maps/label', { mapPath, label });
+    return response.data;
+  }
+
   // Server endpoints
   async getServerStatus() {
     const response = await this.client.get('/server/status');

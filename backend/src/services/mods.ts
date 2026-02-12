@@ -167,7 +167,7 @@ export async function listMods(): Promise<
 }
 
 export async function listModMaps(): Promise<{
-  maps: string[];
+  maps: Array<{ value: string; label: string | null; source: 'mod' }>;
   timedOut: boolean;
   scannedFiles: number;
   skippedLarge: number;
@@ -245,10 +245,40 @@ export async function listModMaps(): Promise<{
     }
   }
 
+  const mapValues = Array.from(maps).sort((a, b) => a.localeCompare(b));
+  const labels = await prisma.mapLabel.findMany({
+    where: { mapPath: { in: mapValues } },
+  });
+  const labelMap = new Map(labels.map((entry) => [entry.mapPath, entry.label]));
+
   return {
-    maps: Array.from(maps).sort((a, b) => a.localeCompare(b)),
+    maps: mapValues.map((value) => ({
+      value,
+      label: labelMap.get(value) || null,
+      source: 'mod' as const,
+    })),
     timedOut,
     scannedFiles,
     skippedLarge,
   };
+}
+
+export async function upsertMapLabel(mapPath: string, label: string): Promise<{ mapPath: string; label: string }> {
+  const normalized = mapPath.trim();
+  const cleanedLabel = label.trim();
+
+  if (!normalized || !normalized.startsWith('/levels/')) {
+    throw new Error('Invalid map path');
+  }
+  if (!cleanedLabel || cleanedLabel.length > 80) {
+    throw new Error('Invalid map label');
+  }
+
+  const updated = await prisma.mapLabel.upsert({
+    where: { mapPath: normalized },
+    create: { mapPath: normalized, label: cleanedLabel },
+    update: { label: cleanedLabel },
+  });
+
+  return { mapPath: updated.mapPath, label: updated.label };
 }
