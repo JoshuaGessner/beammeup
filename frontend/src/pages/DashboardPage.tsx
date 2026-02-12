@@ -14,6 +14,7 @@ export function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [restarting, setRestarting] = useState(false);
   const [logsLoading, setLogsLoading] = useState(false);
+  const [currentMap, setCurrentMap] = useState<string>('');
 
   useEffect(() => {
     if (!user) {
@@ -25,6 +26,19 @@ export function DashboardPage() {
     try {
       const data = await api.getServerStatus();
       setStatus(data);
+      
+      // Also load current map
+      const config = await api.getCurrentConfig();
+      if (config?.General?.Map) {
+        const mapPath = config.General.Map;
+        const formatted = mapPath
+          .replace(/^\/?levels\//i, '')
+          .replace(/\/info\.json$/i, '')
+          .replace(/[_-]+/g, ' ')
+          .trim()
+          .replace(/\b\w/g, (char: string) => char.toUpperCase());
+        setCurrentMap(formatted || 'None');
+      }
     } catch (err: any) {
       addNotification('Error', 'Failed to load server status', 'error');
     }
@@ -131,21 +145,29 @@ export function DashboardPage() {
           </div>
         </div>
 
+        {/* Current Map */}
+        <div className="card-lg">
+          <p className="text-sm font-medium text-muted uppercase tracking-wider">Current Map</p>
+          <p className="text-2xl font-bold mt-2">{currentMap || 'Loading...'}</p>
+        </div>
+
         {/* Quick Actions */}
         <div className="card-lg">
           <h2 className="h3 mb-4">Quick Actions</h2>
-          <div className="flex flex-wrap gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <button
               onClick={() => navigate('/config')}
               className="btn btn-primary"
             >
-              ⚙️ Edit Configuration
+              <span className="text-lg">⚙️</span>
+              <span className="ml-2">Configuration</span>
             </button>
             <button
               onClick={() => navigate('/mods')}
               className="btn btn-secondary"
             >
-              📦 Manage Mods
+              <span className="text-lg">📦</span>
+              <span className="ml-2">Manage Mods</span>
             </button>
             {['OWNER', 'ADMIN', 'OPERATOR'].includes(user?.role) && (
               <button
@@ -153,7 +175,8 @@ export function DashboardPage() {
                 disabled={restarting}
                 className="btn btn-danger"
               >
-                {restarting ? '🔄 Restarting...' : '🔄 Restart Server'}
+                <span className="text-lg">{restarting ? '⏳' : '🔄'}</span>
+                <span className="ml-2">{restarting ? 'Restarting...' : 'Restart Server'}</span>
               </button>
             )}
           </div>
@@ -163,13 +186,22 @@ export function DashboardPage() {
         <div className="card-lg">
           <div className="flex items-center justify-between mb-4">
             <h2 className="h3">Recent Logs</h2>
-            <button
-              onClick={loadLogs}
-              disabled={logsLoading}
-              className="btn btn-secondary btn-sm text-sm"
-            >
-              {logsLoading ? '🔄' : '↻'} Refresh
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setLogs('')}
+                className="btn btn-secondary btn-sm text-sm"
+                title="Clear logs display"
+              >
+                🗑️ Clear
+              </button>
+              <button
+                onClick={loadLogs}
+                disabled={logsLoading}
+                className="btn btn-secondary btn-sm text-sm"
+              >
+                {logsLoading ? '🔄' : '↻'} Refresh
+              </button>
+            </div>
           </div>
           <div className="bg-primary border border-primary rounded-lg p-4 font-mono text-xs text-secondary overflow-x-auto max-h-64 overflow-y-auto">
             {logs ? (

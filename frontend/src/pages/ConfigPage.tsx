@@ -32,9 +32,6 @@ const formatMapLabel = (value: string) => {
 };
 
 export function ConfigPage() {
-  // Component version identifier for debugging
-  console.log('[ConfigPage] Component mounted/rendered - v2026.02.12.01');
-  
   const { user } = useAuth();
   const navigate = useNavigate();
   const { addNotification } = useNotifications();
@@ -86,14 +83,7 @@ export function ConfigPage() {
   }, []);
 
   useEffect(() => {
-    console.log('[ConfigPage] Map scan useEffect triggered', { 
-      hasUser: !!user, 
-      userRole: user?.role,
-      willCheckMaps: user && ['OWNER', 'ADMIN'].includes(user.role)
-    });
-    
     if (!user || !['OWNER', 'ADMIN'].includes(user.role)) {
-      console.log('[ConfigPage] Skipping map check - no user or insufficient role');
       return;
     }
 
@@ -107,36 +97,21 @@ export function ConfigPage() {
         const serverStatus = await api.getServerStatus();
         const serverStartedAt = serverStatus?.startedAt;
         
-        console.log('[ConfigPage] Cache check:', {
-          hasCachedData: !!cachedData,
-          cachedServerStart: cachedData?.serverStartedAt,
-          currentServerStart: serverStartedAt,
-        });
-        
         // Only rescan if server has restarted since last scan
         let needsRescan = false;
         if (!cachedData || !cachedData.serverStartedAt) {
           needsRescan = true;
-          console.log('[ConfigPage] No cache found - need rescan');
         } else if (!serverStartedAt) {
           // If we can't get server start time, use cached maps
-          console.log('[ConfigPage] Cannot determine server start time - using cache');
           needsRescan = false;
         } else {
           // Compare timestamps - only rescan if server started AFTER our last cache
           const serverTime = new Date(serverStartedAt).getTime();
           const cacheTime = new Date(cachedData.serverStartedAt).getTime();
           needsRescan = serverTime > cacheTime;
-          console.log('[ConfigPage] Timestamp comparison:', {
-            serverTime,
-            cacheTime,
-            diff: serverTime - cacheTime,
-            needsRescan,
-          });
         }
         
         if (needsRescan) {
-          console.log('[ConfigPage] Triggering map scan');
           setLoadingMaps(true);
           
           // Now trigger the expensive map scan
@@ -163,10 +138,8 @@ export function ConfigPage() {
           }
           
           setLoadingMaps(false);
-        } else {
-          console.log('[ConfigPage] Using cached maps - server not restarted');
-          // Cache is valid, no loading state needed
         }
+        // Cache is valid, no loading state needed
       } catch (error) {
         console.error('[ConfigPage] Failed to check map scan status:', error);
         addNotification('Warning', 'Map list could not be refreshed from mods', 'warning');
