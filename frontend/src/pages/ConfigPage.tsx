@@ -125,7 +125,6 @@ export function ConfigPage() {
 
   const currentMapValue = config?.General?.Map || '';
   const serverMapValue = originalConfig?.General?.Map || '';
-  const currentMapLabel = currentMapValue ? formatMapLabel(currentMapValue) : 'Select a map';
   const dynamicMapOptions = modMaps.map((map) => ({
     label: `${map.label || formatMapLabel(map.value)} (Mod)`,
     value: map.value,
