@@ -8,9 +8,9 @@ import { readConfigFile } from './config.js';
 const CONFIG_PATH = process.env.BEAMMP_CONFIG_PATH || '/beammp/ServerConfig.toml';
 const RESOURCES_PATH = process.env.BEAMMP_RESOURCES_PATH || '';
 const MAX_ZIP_SIZE = parseInt(process.env.MAX_MOD_SIZE || '2048') * 1024 * 1024; // 2048MB default
-const MAP_SCAN_TIMEOUT_MS = parseInt(process.env.MAP_SCAN_TIMEOUT_MS || '5000', 10);
+const MAP_SCAN_TIMEOUT_MS = parseInt(process.env.MAP_SCAN_TIMEOUT_MS || '30000', 10);
 const MAP_SCAN_MAX_ZIP_MB = parseInt(process.env.MAP_SCAN_MAX_ZIP_MB || '2048', 10);
-const MAP_SCAN_MAX_ENTRIES = parseInt(process.env.MAP_SCAN_MAX_ENTRIES || '5000', 10);
+const MAP_SCAN_MAX_ENTRIES = parseInt(process.env.MAP_SCAN_MAX_ENTRIES || '10000', 10);
 
 const withTimeout = async <T>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
   let timeoutId: NodeJS.Timeout | null = null;
@@ -180,11 +180,24 @@ export async function listModMaps(): Promise<{
 
   const modsDir = await getModsDirectory();
 
-  const entries = await withTimeout(
-    readdir(modsDir, { withFileTypes: true }),
-    MAP_SCAN_TIMEOUT_MS,
-    'Reading mods directory'
-  );
+  let entries;
+  try {
+    entries = await withTimeout(
+      readdir(modsDir, { withFileTypes: true }),
+      MAP_SCAN_TIMEOUT_MS,
+      'Reading mods directory'
+    );
+  } catch (error) {
+    console.warn('[mods] Failed to read mods directory:', modsDir, error);
+    return {
+      maps: [],
+      timedOut: false,
+      scannedFiles: 0,
+      skippedLarge: 0,
+    };
+  }
+
+  console.log('[mods] Scanning directory:', modsDir, 'found', entries.length, 'entries');
 
   for (const entry of entries) {
     if (Date.now() - start > MAP_SCAN_TIMEOUT_MS) {
@@ -244,6 +257,14 @@ export async function listModMaps(): Promise<{
       break;
     }
   }
+
+  console.log('[mods] Map scan complete:', {
+    mapsFound: maps.size,
+    scannedFiles,
+    skippedLarge,
+    timedOut,
+    duration: `${Date.now() - start}ms`,
+  });
 
   const mapValues = Array.from(maps).sort((a, b) => a.localeCompare(b));
   const labels = await prisma.mapLabel.findMany({

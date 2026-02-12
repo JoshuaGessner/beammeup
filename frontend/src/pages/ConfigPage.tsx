@@ -124,6 +124,7 @@ export function ConfigPage() {
   };
 
   const currentMapValue = config?.General?.Map || '';
+  const serverMapValue = originalConfig?.General?.Map || '';
   const currentMapLabel = currentMapValue ? formatMapLabel(currentMapValue) : 'Select a map';
   const dynamicMapOptions = modMaps.map((map) => ({
     label: `${map.label || formatMapLabel(map.value)} (Mod)`,
@@ -308,15 +309,15 @@ export function ConfigPage() {
                   ))}
                 </select>
                 <p className="field-hint">
-                  {currentMapValue ? `Current: ${currentMapLabel}` : 'Select a map to apply it.'}
+                  {serverMapValue ? `Current: ${formatMapLabel(serverMapValue)}` : 'No map configured yet'}
                   {mapScanInfo?.timedOut && (
                     <span className="block text-amber-300 mt-1">
-                      Map scan timed out; some mod maps may be missing.
+                      ⚠️ Map scan timed out - increase MAP_SCAN_TIMEOUT_MS if needed
                     </span>
                   )}
                   {!!mapScanInfo?.skippedLarge && (
                     <span className="block text-amber-300 mt-1">
-                      Skipped {mapScanInfo.skippedLarge} large mod file(s) during scan.
+                      ⚠️ Skipped {mapScanInfo.skippedLarge} large mod(s) - adjust MAP_SCAN_MAX_ZIP_MB if needed
                     </span>
                   )}
                 </p>
