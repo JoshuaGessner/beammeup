@@ -97,14 +97,36 @@ export function ConfigPage() {
         const serverStatus = await api.getServerStatus();
         const serverStartedAt = serverStatus?.startedAt;
         
+        console.log('[ConfigPage] Cache check:', {
+          hasCachedData: !!cachedData,
+          cachedServerStart: cachedData?.serverStartedAt,
+          currentServerStart: serverStartedAt,
+        });
+        
         // Only rescan if server has restarted since last scan
-        const needsRescan = !cachedData || 
-          !cachedData.serverStartedAt || 
-          !serverStartedAt ||
-          new Date(serverStartedAt) > new Date(cachedData.serverStartedAt);
+        let needsRescan = false;
+        if (!cachedData || !cachedData.serverStartedAt) {
+          needsRescan = true;
+          console.log('[ConfigPage] No cache found - need rescan');
+        } else if (!serverStartedAt) {
+          // If we can't get server start time, use cached maps
+          console.log('[ConfigPage] Cannot determine server start time - using cache');
+          needsRescan = false;
+        } else {
+          // Compare timestamps - only rescan if server started AFTER our last cache
+          const serverTime = new Date(serverStartedAt).getTime();
+          const cacheTime = new Date(cachedData.serverStartedAt).getTime();
+          needsRescan = serverTime > cacheTime;
+          console.log('[ConfigPage] Timestamp comparison:', {
+            serverTime,
+            cacheTime,
+            diff: serverTime - cacheTime,
+            needsRescan,
+          });
+        }
         
         if (needsRescan) {
-          console.log('[ConfigPage] Server restarted or no cache - rescanning maps');
+          console.log('[ConfigPage] Triggering map scan');
           setLoadingMaps(true);
           
           // Now trigger the expensive map scan
@@ -116,7 +138,7 @@ export function ConfigPage() {
           try {
             localStorage.setItem('beammeup_mod_maps_cache', JSON.stringify({
               maps,
-              serverStartedAt,
+              serverStartedAt: serverStartedAt || new Date().toISOString(),
               cachedAt: new Date().toISOString(),
             }));
           } catch (error) {
