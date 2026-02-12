@@ -43,6 +43,8 @@ export function ConfigPage() {
   const [authKeyStatus, setAuthKeyStatus] = useState<{ isSet: boolean; isDefault: boolean } | null>(null);
   const [showAuthKeyModal, setShowAuthKeyModal] = useState(false);
   const [showMapAdvanced, setShowMapAdvanced] = useState(false);
+  const [dynamicMaps, setDynamicMaps] = useState<string[]>([]);
+  const [mapScanInfo, setMapScanInfo] = useState<{ timedOut: boolean; skippedLarge: number } | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -65,6 +67,28 @@ export function ConfigPage() {
       .then((status) => setAuthKeyStatus(status))
       .catch(() => setAuthKeyStatus(null));
   }, []);
+
+  useEffect(() => {
+    if (!user || !['OWNER', 'ADMIN'].includes(user.role)) {
+      return;
+    }
+
+    api
+      .getAvailableMaps()
+      .then((result) => {
+        const maps = Array.isArray(result?.maps) ? result.maps : [];
+        setDynamicMaps(maps);
+        if (result?.timedOut || result?.skippedLarge > 0) {
+          setMapScanInfo({
+            timedOut: !!result?.timedOut,
+            skippedLarge: Number(result?.skippedLarge || 0),
+          });
+        }
+      })
+      .catch(() => {
+        addNotification('Warning', 'Map list could not be refreshed from mods', 'warning');
+      });
+  }, [user, addNotification]);
 
   // Detect changes
   useEffect(() => {
@@ -113,11 +137,26 @@ export function ConfigPage() {
 
   const currentMapValue = config?.General?.Map || '';
   const currentMapLabel = currentMapValue ? formatMapLabel(currentMapValue) : 'Select a map';
-  const presetValues = mapPresets.map((preset) => preset.value);
-  const showCurrentMap = currentMapValue && !presetValues.includes(currentMapValue);
+  const dynamicMapOptions = dynamicMaps.map((value) => ({
+    label: formatMapLabel(value),
+    value,
+  }));
+
+  const mergedOptions = [...mapPresets, ...dynamicMapOptions].reduce(
+    (acc: Array<{ label: string; value: string }>, option) => {
+      if (!acc.some((item) => item.value === option.value)) {
+        acc.push(option);
+      }
+      return acc;
+    },
+    []
+  );
+
+  const optionValues = mergedOptions.map((preset) => preset.value);
+  const showCurrentMap = currentMapValue && !optionValues.includes(currentMapValue);
   const mapOptions = showCurrentMap
-    ? [{ label: `${currentMapLabel} (Current)`, value: currentMapValue }, ...mapPresets]
-    : mapPresets;
+    ? [{ label: `${currentMapLabel} (Current)`, value: currentMapValue }, ...mergedOptions]
+    : mergedOptions;
 
   return (
     <Layout>
@@ -254,6 +293,7 @@ export function ConfigPage() {
                       className="input font-mono text-sm"
                     />
                     <p className="field-hint mt-2">Example: /levels/hirochi_raceway/info.json</p>
+                    <p className="field-hint">Maps from installed mods are detected automatically.</p>
                   </div>
                 )}
               </div>

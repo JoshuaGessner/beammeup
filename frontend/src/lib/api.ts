@@ -137,6 +137,11 @@ class ApiClient {
     return response.data;
   }
 
+  async getAvailableMaps() {
+    const response = await this.client.get('/config/maps');
+    return response.data;
+  }
+
   // Server endpoints
   async getServerStatus() {
     const response = await this.client.get('/server/status');

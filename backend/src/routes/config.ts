@@ -5,6 +5,7 @@ import { logAuditAction } from '../middleware/audit-logger.js';
 import { csrfProtection } from '../middleware/csrf.js';
 import { verifyPassword } from '../auth/password.js';
 import { readConfigFile, writeConfigFile, backupConfigFile, validateConfig } from '../services/config.js';
+import { listModMaps } from '../services/mods.js';
 
 export async function configRoutes(fastify: FastifyInstance) {
   // Get current config
@@ -57,6 +58,26 @@ export async function configRoutes(fastify: FastifyInstance) {
       reply.code(200).send({ isSet, isDefault });
     } catch {
       reply.code(500).send({ error: 'Failed to check AuthKey' });
+    }
+  });
+
+  // List available maps from installed mods (Owner/Admin only)
+  fastify.get('/maps', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      if (!requireAuth(request, reply)) { return; }
+
+      const user = await prisma.user.findUnique({
+        where: { id: (request.user as any)?.sub },
+      });
+
+      if (!user || !['OWNER', 'ADMIN'].includes(user.role)) {
+        return reply.code(403).send({ error: 'Insufficient permissions' });
+      }
+
+      const result = await listModMaps();
+      reply.code(200).send(result);
+    } catch (error) {
+      reply.code(500).send({ error: 'Failed to list maps' });
     }
   });
 

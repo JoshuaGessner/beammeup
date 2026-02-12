@@ -65,7 +65,7 @@ NODE_ENV=production
 ALLOWED_ORIGINS=https://yourdomain.com
 
 # Limit mod file upload size (in MB)
-MAX_MOD_SIZE=1024
+MAX_MOD_SIZE=2048
 ```
 
 ### Ports
